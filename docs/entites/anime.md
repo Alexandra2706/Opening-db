@@ -78,15 +78,19 @@ Description: Количество вышедших эпизодов, актул�
 
 ## aired_on
 
-Type: `date`
+Type: `str`
 
-Description: начало выпуска
+Format: `ISO 8601 with TimeZone`
+
+Description: начало выпуска, формат ISO 8601 with TimeZone
 
 ## released_on
 
-Type: `date`
+Type: `str`
 
-Description: конец выпуска
+Format: `ISO 8601 with TimeZone`
+
+Description: конец выпуска, формат ISO 8601 with TimeZone
 
 ## rating
 
@@ -126,9 +130,11 @@ Description: id с сайта myanimelist
 
 ## updated_at
 
-Type: `date`
+Type: `str`
 
-Description: дата обновления
+Format: `ISO 8601 with TimeZone`
+
+Description: дата обновления, формат ISO 8601 with TimeZone
 
 ## fansubbers
 
@@ -166,7 +172,7 @@ Type: `dict[]`
 
 Description: кадры
 
-```json
+```javascript
 {
     "id": int,
     "name": str, // название анимэ
@@ -184,8 +190,8 @@ Description: кадры
     "status": str, // статус: anons, ongoing, released
     "episodes": int, // количество серий
     "episodes_aired": 0, // количество вышедших эпизодов
-    "aired_on": date, // начало выпуска
-    "released_on": date, // конец выпуска
+    "aired_on": str, // начало выпуска, формат ISO 8601 with TimeZone
+    "released_on": str, // конец выпуска, формат ISO 8601 with TimeZone
     "rating": str, // возрастной ценз    
     "duration": int, // длительность серии в минутах
     "description": str, // описание
@@ -193,7 +199,7 @@ Description: кадры
     "description_source": null, // Пока опускаем
     "franchise": str, // франшиза
     "myanimelist_id": int, //id с сайта myanimelist
-    "updated_at": "2024-03-02T19:31:43.472+03:00", // дата обновления
+    "updated_at": str, // дата обновления, формат ISO 8601 with TimeZone
     "next_episode_at": null,
     "fansubbers": str[], // субтитры    
     "licensors": str [],//лицензиары

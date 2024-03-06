@@ -1,0 +1,40 @@
+name: Build, push docker images
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - v*
+    branches:
+      - main
+
+jobs:
+  build_and_push:
+    runs-on:
+      - linux
+      - X64
+
+    env:
+      SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+      SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+
+    steps:
+      - name: Check out git repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Vars
+        run: make vars
+
+      - name: Login to registry
+        run: make registry_login
+
+      - name: Build docker images
+        run: make api.build
+
+      - name: Push docker images
+        run: make api.push
+
+
+
