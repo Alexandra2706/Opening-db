@@ -13,7 +13,7 @@ CURRENT_APP_VERSION := $(shell \
   | sed 's/-g.*$///'\
 )
 
-DOCKER_IMAGE_NAME ?= rg.fr-par.scw.cloud/opdb/api:${CURRENT_APP_VERSION}
+DOCKER_IMAGE_URL ?= rg.fr-par.scw.cloud/opdb/api:${CURRENT_APP_VERSION}
 
 vars: ## Показать переменные
 	: -------------------------------------------------------------------
