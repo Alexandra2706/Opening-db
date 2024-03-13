@@ -1,0 +1,35 @@
+name: Terraform plan
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build_and_push:
+    runs-on:
+      - linux
+      - X64
+      - self-hosted
+
+    container:
+      image: hashicorp/terraform
+
+    env:
+      SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+      SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+      TF_VAR_access_key: ${{ secrets.SCW_ACCESS_KEY }}
+      TF_VAR_secret_key: ${{ secrets.SCW_SECRET_KEY }}
+
+    steps:
+      - name: Check out git repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Vars
+        run: make vars
+
+      - name: Terraform plan
+        run: | 
+          terraform init
+          terraform plan
+
