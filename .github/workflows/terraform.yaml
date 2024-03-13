@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_and_push:
+  terraform_plan:
     runs-on:
       - linux
       - X64
@@ -25,11 +25,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Vars
-        run: make vars
-
       - name: Terraform plan
         run: | 
+          cd terraform
           terraform init
           terraform plan
 
