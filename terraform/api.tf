@@ -16,6 +16,7 @@ resource scaleway_container opdb-api {
   privacy = "public"
   protocol = "http1"
   deploy = true
+  max_concurrency = 80
 }
 
 output "endpoint" {
