@@ -28,6 +28,6 @@ jobs:
       - name: Terraform plan
         run: | 
           cd terraform
-          terraform init
+          terraform init -backend-config="access_key=${{ secrets.SCW_ACCESS_KEY }}" -backend-config="secret_key=${{ secrets.SCW_SECRET_KEY }}"
           terraform plan
 
