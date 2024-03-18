@@ -19,6 +19,14 @@ terraform {
     }
   }
   required_version = ">= 0.13"
+
+  backend "s3" {
+    bucket = "opdb-deploy"
+    region = "fr-par"
+    access_key = var.access_key
+    secret_key = var.secret_key
+    endpoint = "https://opdb-deploy.s3.fr-par.scw.cloud"
+  }
 }
 
 provider "scaleway" {
