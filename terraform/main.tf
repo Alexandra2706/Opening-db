@@ -22,7 +22,6 @@ terraform {
 
   backend "s3" {
     bucket = "opdb-deploy"
-    region = "fr-par"
     key = "terraform_state"
     endpoint = "https://opdb-deploy.s3.fr-par.scw.cloud"
   }
