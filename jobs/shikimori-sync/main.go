@@ -2,13 +2,11 @@ package main
 
 import (
 	"log"
-	"time"
-
 	shikimori_api "shikimori-sync/shikimori-api"
 )
 
 const (
-	maxNumberPage = 10
+	maxNumberPage = 5
 )
 
 func main() {
@@ -20,7 +18,13 @@ func main() {
 		} else {
 			log.Printf("Anime %d, called %q exists", i, anime.Name)
 		}
-		time.Sleep(2 * time.Second)
+	}
+
+	anime, err := shikimori_api.ListAnime()
+	if err != nil {
+		log.Printf("Error in list anime: %q", err.Error())
+	} else {
+		log.Println("List of anime ids:", anime)
 	}
 
 }

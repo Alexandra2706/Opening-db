@@ -18,15 +18,16 @@ terraform {
       source = "scaleway/scaleway"
     }
   }
-  required_version = ">= 0.13"
+  required_version = ">= 1.6.1"
 
   backend "s3" {
     bucket = "opdb-deploy"
-    key = "terraform_state"
+    key = "terraform.tfstate"
     region                      = "fr-par"
     endpoint                    = "https://s3.fr-par.scw.cloud"
     skip_credentials_validation = true
     skip_region_validation      = true
+    skip_requesting_account_id  = true
   }
 }
 
