@@ -26,8 +26,9 @@ jobs:
           fetch-depth: 0
 
       - name: Terraform plan
-        run: | 
-          cd terraform
-          terraform init
-          terraform plan
+        run: #|
+#          cd terraform
+#          terraform init
+#          terraform plan
+          make terraform
 

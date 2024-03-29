@@ -21,6 +21,28 @@ vars: ## Показать переменные
 	:  DOCKER_IMAGE_URL:    $(DOCKER_IMAGE_URL)
 	: -------------------------------------------------------------------
 
+local_run.start_postgres:
+	docker run --name postgres-test -e POSTGRES_PASSWORD=qwerty -d -v ./sqls:/sqls postgres:15-alpine
+
+local_run.stop_postgres:
+	docker stop postgres-test
+	docker rm -fv postgres-test
+
+tests.postgres:
+	make local_run.start_postgres
+	sleep 10
+	: -------------------------------------------------------------------
+	:  MIGRATIONS
+	: -------------------------------------------------------------------
+	docker exec --user postgres postgres-test psql -f /sqls/migrations/0000_init.sql
+
+	: -------------------------------------------------------------------
+	:  TEST: table1.sql
+	: -------------------------------------------------------------------
+	#docker exec --user postgres postgres-test psql -f /sqls/tests/table1.sql
+
+	make local_run.stop_postgres
+
 registry_login:
 	docker login rg.fr-par.scw.cloud/opdb -u nologin -p ${SCW_SECRET_KEY}
 
@@ -29,3 +51,14 @@ api.build:
 
 api.push:
 	docker push ${DOCKER_IMAGE_URL}
+
+init:
+	terraform init
+
+plan:
+	terraform plan
+
+terraform:
+	cd terraform
+	make init
+	make plan
