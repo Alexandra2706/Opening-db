@@ -27,8 +27,5 @@ jobs:
 
       - name: Terraform plan
         run: |
-#          cd terraform
-#          terraform init
-#          terraform plan
           apk add make bash
           make terraform.plan
