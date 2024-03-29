@@ -52,13 +52,7 @@ api.build:
 api.push:
 	docker push ${DOCKER_IMAGE_URL}
 
-init:
-	terraform init
-
-plan:
-	terraform plan
-
 terraform:
 	cd terraform
-	make init
-	make plan
+	terraform init
+	terraform plan
