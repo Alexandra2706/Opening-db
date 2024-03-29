@@ -26,9 +26,9 @@ jobs:
           fetch-depth: 0
 
       - name: Terraform plan
-        run: #|
+        run: |
 #          cd terraform
 #          terraform init
 #          terraform plan
-          make terraform
-
+          apk add make bash
+          make terraform.plan
