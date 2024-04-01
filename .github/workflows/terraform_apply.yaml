@@ -27,7 +27,5 @@ jobs:
 
       - name: Terraform apply
         run: |
-          cd terraform
-          terraform init
-          terraform apply -auto-approve
-
+          apk add make bash
+          make terraform.plan
