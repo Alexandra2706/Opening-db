@@ -15,6 +15,10 @@ CURRENT_APP_VERSION := $(shell \
 
 DOCKER_IMAGE_URL ?= rg.fr-par.scw.cloud/opdb/api:${CURRENT_APP_VERSION}
 
+.PHONY: vars local_run.start_postgres local_run.stop_postgres tests.postgres.migrations
+.PHONY: tests.postgres.test tests.postgres registry_login api.build api.push
+.PHONY: terraform.plan terraform.apply
+
 vars: ## Показать переменные
 	: -------------------------------------------------------------------
 	:  CURRENT_APP_VERSION: $(CURRENT_APP_VERSION)
