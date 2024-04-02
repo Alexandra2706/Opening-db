@@ -10,6 +10,8 @@ on:
     paths:
       - sqls/**
   pull_request:
+    paths:
+      - sqls/**
 
 jobs:
   build_and_push:
