@@ -1,0 +1,31 @@
+name: Test sqls
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - v*
+    branches:
+      - main
+    paths:
+      - sqls/**
+
+jobs:
+  build_and_push:
+    runs-on:
+      - linux
+      - X64
+      - self-hosted
+
+    steps:
+      - name: Check out git repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Vars
+        run: make vars
+
+      - name: Test
+        run: make tests.postgres
+
