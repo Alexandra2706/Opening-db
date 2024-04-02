@@ -9,6 +9,7 @@ on:
       - main
     paths:
       - sqls/**
+  pull_request:
 
 jobs:
   build_and_push:
