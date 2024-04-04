@@ -33,16 +33,16 @@ CREATE TABLE IF NOT EXISTS images_table(
     meta jsonb --различные данные
 );
 
-CREATE TABLE IF NOT EXISTS ipfs_Object(
+CREATE TABLE IF NOT EXISTS ipfs_object(
     hash varchar(64) PRIMARY KEY, --IPFS CID
     mime_type varchar(64)
 );
 
 CREATE TABLE IF NOT EXISTS genres_table(
     id varchar(32) PRIMARY KEY, -- id жанра uuid
-    shikimori_id integer, --id с сайта shikimori
-    genre_name varchar(100), --название жанра на английском
-    russian varchar(100) --название жанра на русском
+    shikimori_id integer UNIQUE, --id с сайта shikimori
+    genre_name varchar(100) UNIQUE, --название жанра на английском
+    russian varchar(100) UNIQUE --название жанра на русском
 );
 
 CREATE TABLE IF NOT EXISTS studio_table(

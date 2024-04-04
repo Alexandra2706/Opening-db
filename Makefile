@@ -38,6 +38,12 @@ tests.postgres.migrations:
 	: -------------------------------------------------------------------
 	docker exec --user postgres postgres-test psql -f /sqls/migrations/0000_init.sql
 
+tests.postgres.data_create:
+	: -------------------------------------------------------------------
+	:  DATA CREATE
+	: -------------------------------------------------------------------
+	docker exec --user postgres postgres-test psql -f /sqls/datagenerator/test1.sql
+
 tests.postgres.test:
 	: -------------------------------------------------------------------
 	:  TEST: table1.sql
@@ -50,6 +56,7 @@ tests.postgres:
 	make tests.postgres.migrations
 	make tests.postgres.migrations # Повторно применяем миграции для проверки IF EXISTS
 	make tests.postgres.test
+	make tests.postgres.data_create
 
 	make local_run.stop_postgres
 
