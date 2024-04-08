@@ -83,28 +83,28 @@ CREATE TABLE IF NOT EXISTS animes(
     episodes integer DEFAULT 0, --количество серий
     episodes_aired integer DEFAULT 0, --количество вышедших эпизодов
     aired_on timestamp with time zone, --начало выпуска, формат ISO 8601 with TimeZone
-    released_on timestamp with time zone, --конец выпуска, формат ISO 8601 with TimeZone или тут должен быть text?
+    released_on timestamp with time zone, --конец выпуска, формат ISO 8601 with TimeZone
     duration integer, --длительность серии в минутах
     licensors_ru jsonb, --лицензировано
     franchise jsonb, --франшиза
     updated_at timestamp with time zone DEFAULT NOW(), --дата обновления, формат ISO 8601 with TimeZone
     next_episode_at varchar(255), --следующая серия ссылка
     image varchar(64) REFERENCES images_table (hash), --постер аниме (изображения на сайте shikimori)
-    genres varchar(32)[], --REFERENCES Genre (id), --жанры, может быть несколько
+    genres varchar(32)[], --жанры, может быть несколько
     studios uuid[], --REFERENCES Studio (id), --студии, может быть несколько
     videos varchar(64)[], --REFERENCES Video (id), --эпизоды
     screenshots varchar(64)[], -- REFERENCES Sreenshot (id), --кадры
 
     -- shikimori data:
-    shikimori_id integer UNIQUE NOT NULL, --id с сайта shikimori
-    shikimori_kind kind NOT NULL, --тип анимэ на сайте shikimori
+    --shikimori_id integer UNIQUE NOT NULL,--временно --id с сайта shikimori
+    --shikimori_kind kind NOT NULL,--временно --тип анимэ на сайте shikimori
     shikimori_rating rating, --возрастной ценз
     shikimori_description varchar, --описание на сайте shikimori
     shikimori_description_html varchar, --описание с тегами html на сайте shikimori
     shikimori_last_revision timestamp with time zone, --дата обновления на сайте shikimori, формат ISO 8601 with TimeZone
 
     -- myanimelist data:
-    myanimelist_id integer UNIQUE NOT NULL, --id с сайта myanimelist
+    --myanimelist_id integer UNIQUE NOT NULL, --временно --id с сайта myanimelist
     myanimelist_score real --рейтинг берется из myanimelist
 
     --description_source null, --Пока опускаем не понятно, что это
