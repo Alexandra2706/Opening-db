@@ -65,11 +65,11 @@ CREATE TABLE IF NOT EXISTS video_table(
     --hosting varchar(100)
 );
 
-CREATE TABLE IF NOT EXISTS screenshots_table(
-    hash varchar(64) PRIMARY KEY, --id скриншота IPFS CID
-    original varchar(255), --url исходного изображения
-    preview varchar(255) --url превью
-);
+-- CREATE TABLE IF NOT EXISTS screenshots_table(
+--     hash varchar(64) PRIMARY KEY, --id скриншота IPFS CID
+--     original varchar(255), --url исходного изображения
+--     preview varchar(255) --url превью
+-- );
 
 CREATE TABLE IF NOT EXISTS animes(
     -- Основные поля:

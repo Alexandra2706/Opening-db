@@ -90,27 +90,6 @@ SELECT * FROM video_table;
 SELECT * FROM ipfs_object;
 
 
--- Функция генерирует запись в таблице скриншотов screenshots_table
--- и добавляет запись в таблицу ipfs_object
--- возвращает hash
-CREATE OR REPLACE FUNCTION screenshot_generate() RETURNS VARCHAR(64) AS $screenshot_generate$
-DECLARE
-    current_hash varchar(64) := NULL;
-BEGIN
-    current_hash := md5(random()::text);
-    INSERT INTO screenshots_table (hash, original, preview)
-    SELECT
-        current_hash AS hash,
-        md5(random()::text)::char(10) AS original,
-        md5(random()::text)::char(10) AS preview
-    FROM
-        generate_series(1, 1);
-    INSERT INTO ipfs_object (hash, mime_type) VALUES (current_hash, 'image/jpeg');
-    RETURN current_hash;
-END;
-$screenshot_generate$ LANGUAGE plpgsql;
-
-
 -- Функция генерирует таблицу anime
 CREATE OR REPLACE FUNCTION animes_generate() RETURNS VOID AS $animes_generate$
 DECLARE
@@ -162,9 +141,9 @@ BEGIN
         END IF;
 
         screenshots_number := ROUND(RANDOM()*max_screenshots_number); --количество скриншотов для таблицы animes
-        RAISE NOTICE 'screenshots_number = %', screenshots_number;
+        --RAISE NOTICE 'screenshots_number = %', screenshots_number;
         IF screenshots_number != 0 THEN
-            SELECT ARRAY(SELECT screenshot_generate() INTO screenshots_array FROM generate_series(1, screenshots_number));
+            SELECT ARRAY(SELECT image_generate() INTO screenshots_array FROM generate_series(1, screenshots_number));
         END IF;
 
         INSERT INTO animes (id,anime_name, name_russian, name_english, name_japanese, name_synonyms,
@@ -208,5 +187,4 @@ $animes_generate$ LANGUAGE plpgsql;
 SELECT animes_generate();
 
 SELECT * FROM animes;
-SELECT * FROM screenshots_table;
 SELECT * FROM ipfs_object;
