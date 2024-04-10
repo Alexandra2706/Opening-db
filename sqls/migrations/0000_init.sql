@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS animes(
     name_japanese varchar[], --название анимэ на японском
     name_synonyms varchar[], --синонимы названия анимэ
     anime_status status NOT NULL, --статус: anons, ongoing, released
-    episodes integer DEFAULT 0, --количество серий
+    episodes integer, --количество серий
     episodes_aired integer DEFAULT 0, --количество вышедших эпизодов
     aired_on timestamp with time zone, --начало выпуска, формат ISO 8601 with TimeZone
     released_on timestamp with time zone, --конец выпуска, формат ISO 8601 with TimeZone
@@ -96,15 +96,15 @@ CREATE TABLE IF NOT EXISTS animes(
     screenshots varchar(64)[], -- REFERENCES Sreenshot (id), --кадры
 
     -- shikimori data:
-    --shikimori_id integer UNIQUE NOT NULL,--временно --id с сайта shikimori
-    --shikimori_kind kind NOT NULL,--временно --тип анимэ на сайте shikimori
+    shikimori_id integer UNIQUE NOT NULL,--временно --id с сайта shikimori
+    shikimori_kind kind NOT NULL,--временно --тип анимэ на сайте shikimori
     shikimori_rating rating, --возрастной ценз
     shikimori_description varchar, --описание на сайте shikimori
     shikimori_description_html varchar, --описание с тегами html на сайте shikimori
     shikimori_last_revision timestamp with time zone, --дата обновления на сайте shikimori, формат ISO 8601 with TimeZone
 
     -- myanimelist data:
-    --myanimelist_id integer UNIQUE NOT NULL, --временно --id с сайта myanimelist
+    myanimelist_id integer UNIQUE NOT NULL, --временно --id с сайта myanimelist
     myanimelist_score real --рейтинг берется из myanimelist
 
     --description_source null, --Пока опускаем не понятно, что это
@@ -128,7 +128,10 @@ BEGIN
 
     --Проверить что id_genre задан верно
     IF NEW.genres IS NOT NULL THEN
-        FOR genre IN NEW.genres.first..NEW.genres.last LOOP
+        RAISE NOTICE 'NEW.genres = %', NEW.genres;
+        --RAISE NOTICE 'NEW.genres.first = %', NEW.genres.first;
+        FOR genre IN NEW.genres LOOP --.first..NEW.genres.last LOOP
+            RAISE NOTICE 'genre = %', genre;
             SELECT id INTO add_genre FROM genres_table WHERE id = genre;
             IF NOT FOUND THEN
                 RAISE EXCEPTION 'genre % not found', genre;

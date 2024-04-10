@@ -38,9 +38,6 @@ BEGIN
 END;
 $image_generate$ LANGUAGE plpgsql;
 
---SELECT image_generate();
---SELECT * FROM images_table;
---SELECT * FROM ipfs_object;
 
 -- Функция генерирует таблицу studio_table
 CREATE OR REPLACE FUNCTION stidio_generate() RETURNS VOID AS $stidio_generate$
@@ -93,13 +90,6 @@ SELECT * FROM video_table;
 SELECT * FROM ipfs_object;
 
 
---
--- CREATE TABLE IF NOT EXISTS screenshots_table(
---     hash varchar(64) PRIMARY KEY, --id скриншота IPFS CID
---     original varchar(255), --url исходного изображения
---     preview varchar(255) --url превью
--- );
-
 -- Функция генерирует запись в таблице скриншотов screenshots_table
 -- и добавляет запись в таблицу ipfs_object
 -- возвращает hash
@@ -120,72 +110,103 @@ BEGIN
 END;
 $screenshot_generate$ LANGUAGE plpgsql;
 
-SELECT screenshot_generate();
-
-SELECT * FROM screenshots_table;
-SELECT * FROM ipfs_object;
-
--- CREATE TABLE IF NOT EXISTS animes(
---     -- Основные поля:
---     id uuid PRIMARY KEY, --наш уникальный id
---     anime_name varchar(255) UNIQUE NOT NULL, --название анимэ
---     name_russian varchar(255), --название анимэ на русском
---     name_english varchar[], --название анимэ на английском
---     name_japanese varchar[], --название анимэ на японском
---     name_synonyms varchar[], --синонимы названия анимэ
---     anime_status status NOT NULL, --статус: anons, ongoing, released
---     episodes integer DEFAULT 0, --количество серий
---     episodes_aired integer DEFAULT 0, --количество вышедших эпизодов
---     aired_on timestamp with time zone, --начало выпуска, формат ISO 8601 with TimeZone
---     released_on timestamp with time zone, --конец выпуска, формат ISO 8601 with TimeZone
---     duration integer, --длительность серии в минутах
---     licensors_ru jsonb, --лицензировано
---     franchise jsonb, --франшиза
---     updated_at timestamp with time zone DEFAULT NOW(), --дата обновления, формат ISO 8601 with TimeZone
---     next_episode_at varchar(255), --следующая серия ссылка
---     image varchar(64) REFERENCES images_table (hash), --постер аниме (изображения на сайте shikimori)
---     genres varchar(32)[], --жанры, может быть несколько
---     studios uuid[], --REFERENCES Studio (id), --студии, может быть несколько
---     videos varchar(64)[], --REFERENCES Video (id), --эпизоды
---     screenshots varchar(64)[] -- REFERENCES Sreenshot (id), --кадры
--- );
 
 -- Функция генерирует таблицу anime
 CREATE OR REPLACE FUNCTION animes_generate() RETURNS VOID AS $animes_generate$
 DECLARE
     -- Задаем количество записей в таблице anime
     number integer := 3;
-    number_episodes integer := 0;
+    number_episodes integer := 0; --количество серий
     data_issue timestamp with time zone;
-    --current_hash varchar(64) := NULL;
+    i integer;
+    row_number_genres integer := 0; --количество записей в таблице genres_table
+    genre_number integer := 0; --количество выбранных записей из таблицы genres_table
+    array_genres varchar(32)[] := NULL; --массив id выбранных записей из таблицы genres_table
+
+    row_number_studios integer := 0; --количество записей в таблице studio_table
+    studio_number integer :=0; --количество выбранных записей из таблицы studio_table
+    array_studios uuid[] := NULL; --массив id выбранных записей из таблицы studio_table
+
+    row_number_videos integer := 0; --количество записей в таблице video_table
+    video_number integer :=0; --количество выбранных записей из таблицы video_table
+    array_videos varchar(64)[] := NULL; --массив hash выбранных записей из таблицы video_table
+
+    screenshots_number integer :=0;
+    max_screenshots_number integer :=5;
+    screenshots_array varchar(64)[];
+
 BEGIN
-    number_episodes :=  CEIL(RANDOM() * 100 + 1);
     data_issue := '2000-01-01 00:00:00'::timestamp +
                   ('2023-12-31 23:59:59'::timestamp - '2000-01-01 00:00:00'::timestamp) * RANDOM();
-    INSERT INTO animes (id,anime_name, name_russian, name_english, name_japanese, name_synonyms,
-                        anime_status, episodes, episodes_aired, aired_on, released_on, duration,
-                        updated_at, next_episode_at, image)
-    SELECT
-        gen_random_uuid() AS id,
-        md5(random()::text)::char(10) AS anime_name,
-        md5(random()::text)::char(10) AS name_russian,
-        ARRAY[md5(random()::text)::char(10)] AS name_english,
-        ARRAY[md5(random()::text)::char(10)]AS name_japanese,
-        ARRAY[md5(random()::text)::char(10)]AS name_synonyms,
-        (ARRAY['anons', 'ongoing', 'released'])[floor(random() * 3 + 1)]::text::status AS anime_status,
-        number_episodes AS episodes,
-        CEIL(RANDOM() * number_episodes) AS episodes_aired,
-        data_issue AS aired_on,
-        data_issue + ('2023-12-31 23:59:59'::timestamp - data_issue) * RANDOM() AS released_on,
-        CEIL(RANDOM() * 196 + 5) AS duration,
-        data_issue + ('2023-12-31 23:59:59'::timestamp - data_issue) * RANDOM() AS updated_at,
-        md5(random()::text)::char(10) AS next_episode_at,
-        image_generate() AS image
-    FROM
-        generate_series(1, number);
+    SELECT COUNT(*) INTO row_number_genres FROM genres_table; --считает кол-во строк в таблице genres_table
+    SELECT COUNT(*) INTO row_number_studios FROM studio_table; --считает кол-во строк в таблице studio_table
+    SELECT COUNT(*) INTO row_number_videos FROM video_table; --считает кол-во строк в таблице video_table
+
+    FOR i IN 1..5 LOOP
+        number_episodes :=  ROUND(RANDOM() * 100);
+
+        genre_number := ROUND(RANDOM()*row_number_genres); --количество выбранных записаей из таблицы genres_table
+        IF genre_number != 0 THEN
+            SELECT ARRAY(SELECT id INTO array_genres FROM genres_table ORDER BY RANDOM() LIMIT genre_number);
+            --RAISE NOTICE 'array_genres = %', array_genres;
+        END IF;
+
+        studio_number := ROUND(RANDOM()*row_number_studios); --количество выбранных записаей из таблицы studio_table
+        IF studio_number != 0 THEN
+            SELECT ARRAY(SELECT id INTO array_studios FROM studio_table ORDER BY RANDOM() LIMIT studio_number);
+        END IF;
+
+        video_number := ROUND(RANDOM()*row_number_studios); --количество выбранных записаей из таблицы video_table
+        IF video_number != 0 THEN
+            SELECT ARRAY(SELECT hash INTO array_videos FROM video_table ORDER BY RANDOM() LIMIT video_number);
+        END IF;
+
+        screenshots_number := ROUND(RANDOM()*max_screenshots_number); --количество скриншотов для таблицы animes
+        RAISE NOTICE 'screenshots_number = %', screenshots_number;
+        IF screenshots_number != 0 THEN
+            SELECT ARRAY(SELECT screenshot_generate() INTO screenshots_array FROM generate_series(1, screenshots_number));
+        END IF;
+
+        INSERT INTO animes (id,anime_name, name_russian, name_english, name_japanese, name_synonyms,
+                            anime_status, episodes, episodes_aired, aired_on, released_on, duration,
+                            updated_at, next_episode_at, image, genres, studios, videos, screenshots,
+                            shikimori_id, shikimori_kind, shikimori_rating, shikimori_description,
+                            shikimori_description_html,shikimori_last_revision, myanimelist_id, myanimelist_score)
+        VALUES (
+        gen_random_uuid(),
+        md5(random()::text)::char(10),
+        md5(random()::text)::char(10),
+        ARRAY[md5(random()::text)::char(10)],
+        ARRAY[md5(random()::text)::char(10)],
+        ARRAY[md5(random()::text)::char(10)],
+        (ARRAY['anons', 'ongoing', 'released'])[floor(random() * 3 + 1)]::status,
+        number_episodes,
+        ROUND(RANDOM() * number_episodes),
+        data_issue,
+        data_issue + ('2023-12-31 23:59:59'::timestamp - data_issue) * RANDOM(),
+        ROUND(RANDOM() * 199 + 1),
+        data_issue + ('2023-12-31 23:59:59'::timestamp - data_issue) * RANDOM(),
+        md5(random()::text)::char(10),
+        image_generate(),
+        array_genres,
+        array_studios,
+        array_videos,
+        screenshots_array,
+        i,
+        (ARRAY['tv', 'movie', 'ova', 'ona', 'other'])[floor(random() * 4 + 1)]::kind,
+        (ARRAY['r_plus', 'pg_13', 'r', 'g', 'rx'])[floor(random() * 5)]::rating,
+        md5(random()::text),
+        md5(random()::text),
+        '2000-01-01 00:00:00'::timestamp + ('2024-04-9 23:59:59'::timestamp - '2000-01-01 00:00:00') * RANDOM(),
+        i,
+        RANDOM()*5
+        );
+    END LOOP;
 END;
 $animes_generate$ LANGUAGE plpgsql;
 
 SELECT animes_generate();
 
 SELECT * FROM animes;
+SELECT * FROM screenshots_table;
+SELECT * FROM ipfs_object;
