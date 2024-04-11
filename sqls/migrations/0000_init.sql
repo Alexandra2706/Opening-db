@@ -65,11 +65,11 @@ CREATE TABLE IF NOT EXISTS video_table(
     --hosting varchar(100)
 );
 
--- CREATE TABLE IF NOT EXISTS screenshots_table(
---     hash varchar(64) PRIMARY KEY, --id скриншота IPFS CID
---     original varchar(255), --url исходного изображения
---     preview varchar(255) --url превью
--- );
+CREATE TABLE IF NOT EXISTS audio_table(
+    hash varchar(64) PRIMARY KEY, --id аудио IPFS CID
+    source_url varchar(255), --url аудиозаписи
+    duration integer --длительность аудио в минутах
+);
 
 CREATE TABLE IF NOT EXISTS animes(
     -- Основные поля:
@@ -108,6 +108,33 @@ CREATE TABLE IF NOT EXISTS animes(
     myanimelist_score real --рейтинг берется из myanimelist
 
     --description_source null, --Пока опускаем не понятно, что это
+);
+
+CREATE TABLE IF NOT EXISTS people(
+    id uuid PRIMARY KEY, --уникальный id человека
+    people_name VARCHAR(128) NOT NULL, --имя
+    russian VARCHAR(128) NOT NULL, --имя на русском
+    image VARCHAR(64) REFERENCES images_table (hash) --url фото человека
+    url VARCHAR(255), --адрес страницы человека на сайте shikimori
+    japanese VARCHAR(64), ----имя на японском
+    job_title VARCHAR(255), --основная работа
+    birth_on date, --дата рождения
+    deceased_on date, --дата смерти
+    website VARCHAR(255), --адрес сайта человека
+    groupped_roles VARCHAR(255)[], --роли в аниме: название + количество
+    roles VARCHAR(255)[], --роли в аниме (Лучшие роли?) {[список ролей] [список аниме]},{[список ролей] [список аниме]}...
+    works VARCHAR(255)[], --участие в проектах: таблица, поля: anime (короткая таблица аниме), manga, role VARCHAR(255)
+    topic_id NULL, -- не поняла что это
+    person_favoured BOOLEAN DEFAULT FALSE,
+    producer BOOLEAN DEFAULT FALSE,
+    producer_favoured BOOLEAN DEFAULT FALSE,
+    mangaka BOOLEAN DEFAULT FALSE,
+    mangaka_favoured BOOLEAN DEFAULT FALSE,
+    seyu BOOLEAN DEFAULT FALSE,
+    seyu_favoured BOOLEAN DEFAULT FALSE,
+    updated_at timestamp with time zone DEFAULT NOW(), --дата обновления, формат ISO 8601 with TimeZone
+    thread_id NULL,  --не поняла что это
+    birthday date --дата рождения еще одна - нужна ли она
 );
 
 CREATE OR REPLACE FUNCTION anime_validate() RETURNS trigger AS $anime_validate$
@@ -168,6 +195,16 @@ BEGIN
             END IF;
         end LOOP;
     END IF;
+
+    --Проверить, что количество вышедщих серий не больше общего количества серий
+    IF NEW.episodes_aired > NEW.episodes THEN
+       RAISE EXCEPTION 'episodes must be lower then episodes_aired';
+    END IF;
+
+    --Проверить, что дата начала выпуска анимэ не больше даты конца выпуска
+    IF NEW.aired_on > NEW.released_on THEN
+        RAISE EXCEPTION 'released_on must be lower then aired_on';
+    END IF
 
 RETURN NEW;
 END;
