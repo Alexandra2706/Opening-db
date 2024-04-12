@@ -40,9 +40,9 @@ CREATE TABLE IF NOT EXISTS ipfs_object(
 
 CREATE TABLE IF NOT EXISTS genres_table(
     id varchar(32) PRIMARY KEY, -- id жанра uuid
-    shikimori_id integer UNIQUE, --id с сайта shikimori
-    genre_name varchar(100) UNIQUE, --название жанра на английском
-    russian varchar(100) UNIQUE --название жанра на русском
+    shikimori_id integer, --id с сайта shikimori
+    genre_name varchar(100), --название жанра на английском
+    russian varchar(100) --название жанра на русском
 );
 
 CREATE TABLE IF NOT EXISTS studio_table(
@@ -82,12 +82,12 @@ CREATE TABLE IF NOT EXISTS animes(
     anime_status status NOT NULL, --статус: anons, ongoing, released
     episodes integer, --количество серий
     episodes_aired integer DEFAULT 0, --количество вышедших эпизодов
-    aired_on timestamp with time zone, --начало выпуска, формат ISO 8601 with TimeZone
-    released_on timestamp with time zone, --конец выпуска, формат ISO 8601 with TimeZone
+    aired_on timestamp with time zone, --начало выпуска
+    released_on timestamp with time zone, --конец выпуска
     duration integer, --длительность серии в минутах
     licensors_ru jsonb, --лицензировано
     franchise jsonb, --франшиза
-    updated_at timestamp with time zone DEFAULT NOW(), --дата обновления, формат ISO 8601 with TimeZone
+    updated_at timestamp with time zone DEFAULT NOW(), --дата обновления
     next_episode_at varchar(255), --следующая серия ссылка
     image varchar(64) REFERENCES images_table (hash), --постер аниме (изображения на сайте shikimori)
     genres varchar(32)[], --жанры, может быть несколько
@@ -96,45 +96,39 @@ CREATE TABLE IF NOT EXISTS animes(
     screenshots varchar(64)[], -- REFERENCES Sreenshot (id), --кадры
 
     -- shikimori data:
-    shikimori_id integer UNIQUE NOT NULL,--временно --id с сайта shikimori
-    shikimori_kind kind NOT NULL,--временно --тип анимэ на сайте shikimori
+    shikimori_id integer UNIQUE NOT NULL, --id с сайта shikimori
+    shikimori_kind kind NOT NULL, --тип анимэ на сайте shikimori
     shikimori_rating rating, --возрастной ценз
     shikimori_description varchar, --описание на сайте shikimori
     shikimori_description_html varchar, --описание с тегами html на сайте shikimori
-    shikimori_last_revision timestamp with time zone, --дата обновления на сайте shikimori, формат ISO 8601 with TimeZone
+    shikimori_last_revision timestamp with time zone, --дата обновления на сайте shikimori
 
     -- myanimelist data:
-    myanimelist_id integer UNIQUE NOT NULL, --временно --id с сайта myanimelist
+    myanimelist_id integer UNIQUE NOT NULL, --id с сайта myanimelist
     myanimelist_score real --рейтинг берется из myanimelist
 
     --description_source null, --Пока опускаем не понятно, что это
 );
 
-CREATE TABLE IF NOT EXISTS people(
+CREATE TABLE IF NOT EXISTS person(
     id uuid PRIMARY KEY, --уникальный id человека
     people_name VARCHAR(128) NOT NULL, --имя
-    russian VARCHAR(128) NOT NULL, --имя на русском
-    image VARCHAR(64) REFERENCES images_table (hash) --url фото человека
-    url VARCHAR(255), --адрес страницы человека на сайте shikimori
+    russian VARCHAR(128), --имя на русском
     japanese VARCHAR(64), ----имя на японском
+    image VARCHAR(64) REFERENCES images_table (hash) --url фото человека
+    shikimori_id integer UNIQUE, --id человека на сайте shikimori
     job_title VARCHAR(255), --основная работа
-    birth_on date, --дата рождения
-    deceased_on date, --дата смерти
+    birthday date, --дата рождения
+    deceased date, --дата смерти
     website VARCHAR(255), --адрес сайта человека
-    groupped_roles VARCHAR(255)[], --роли в аниме: название + количество
-    roles VARCHAR(255)[], --роли в аниме (Лучшие роли?) {[список ролей] [список аниме]},{[список ролей] [список аниме]}...
-    works VARCHAR(255)[], --участие в проектах: таблица, поля: anime (короткая таблица аниме), manga, role VARCHAR(255)
-    topic_id NULL, -- не поняла что это
-    person_favoured BOOLEAN DEFAULT FALSE,
+    groupped_roles jsonb, --роли в аниме: название + количество
+    --roles VARCHAR(255)[], --роли в аниме (Лучшие роли?) {[список аниме]}
+    --works VARCHAR(255)[], --сделать таблицу anime_to_person (id_person, id_anime, role)
     producer BOOLEAN DEFAULT FALSE,
-    producer_favoured BOOLEAN DEFAULT FALSE,
     mangaka BOOLEAN DEFAULT FALSE,
-    mangaka_favoured BOOLEAN DEFAULT FALSE,
     seyu BOOLEAN DEFAULT FALSE,
-    seyu_favoured BOOLEAN DEFAULT FALSE,
-    updated_at timestamp with time zone DEFAULT NOW(), --дата обновления, формат ISO 8601 with TimeZone
-    thread_id NULL,  --не поняла что это
-    birthday date --дата рождения еще одна - нужна ли она
+    updated_at timestamp with time zone DEFAULT NOW(), --дата обновления
+
 );
 
 CREATE OR REPLACE FUNCTION anime_validate() RETURNS trigger AS $anime_validate$
@@ -150,7 +144,7 @@ DECLARE
     add_screenshot varchar(64) := NULL;
     screenshot varchar(64);
 BEGIN
-    --Создаем дату обновления в формате timestamp with time zone
+    --Создаем дату обновления
     NEW.updated_at := current_timestamp;
 
     --Проверить что id_genre задан верно
@@ -184,7 +178,7 @@ BEGIN
                 RAISE EXCEPTION 'video % not found', video;
             END IF;
         end LOOP;
-        END IF;
+    END IF;
 
     --Проверить что id_screenshot задан верно
     IF NEW.screenshots IS NOT NULL THEN
@@ -206,7 +200,7 @@ BEGIN
         RAISE EXCEPTION 'released_on must be lower then aired_on';
     END IF
 
-RETURN NEW;
+    RETURN NEW;
 END;
 $anime_validate$ LANGUAGE plpgsql;
 

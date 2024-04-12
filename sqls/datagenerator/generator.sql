@@ -2,7 +2,7 @@
 CREATE OR REPLACE FUNCTION genre_generate() RETURNS VOID AS $genre_generate$
 DECLARE
     --Задаем количество записей в таблице жанров
-    number integer := 10;
+    number integer := 30;
 BEGIN
     INSERT INTO genres_table (id, shikimori_id, genre_name, russian)
     SELECT
@@ -43,7 +43,7 @@ $image_generate$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION stidio_generate() RETURNS VOID AS $stidio_generate$
 DECLARE
     --Задаем количество записей в таблице image_table
-    number integer := 10;
+    number integer := 100;
 BEGIN
     INSERT INTO studio_table (id, shikimori_id, studio_name, image)
     SELECT
