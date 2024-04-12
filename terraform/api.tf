@@ -14,7 +14,8 @@ resource scaleway_container opdb-api {
   min_scale = 0
   max_scale = 1
   privacy = "public"
-  protocol = "http1"
+  protocol = "h2c"
+  http_option = "redirected"
   deploy = true
   max_concurrency = 80
 }
