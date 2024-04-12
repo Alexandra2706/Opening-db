@@ -24,5 +24,6 @@ func main() {
 }
 
 func sayhello(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Привет!")
+	w.WriteHeader(200)
+	w.Write([]byte("Hello World http2"))
 }
