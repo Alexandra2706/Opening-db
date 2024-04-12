@@ -115,7 +115,7 @@ CREATE TABLE IF NOT EXISTS person(
     people_name VARCHAR(128) NOT NULL, --имя
     russian VARCHAR(128), --имя на русском
     japanese VARCHAR(64), ----имя на японском
-    image VARCHAR(64) REFERENCES images_table (hash) --url фото человека
+    image VARCHAR(64) REFERENCES images_table (hash), --url фото человека
     shikimori_id integer UNIQUE, --id человека на сайте shikimori
     job_title VARCHAR(255), --основная работа
     birthday date, --дата рождения
@@ -127,7 +127,7 @@ CREATE TABLE IF NOT EXISTS person(
     producer BOOLEAN DEFAULT FALSE,
     mangaka BOOLEAN DEFAULT FALSE,
     seyu BOOLEAN DEFAULT FALSE,
-    updated_at timestamp with time zone DEFAULT NOW(), --дата обновления
+    updated_at timestamp with time zone DEFAULT NOW() --дата обновления
 
 );
 
@@ -151,7 +151,7 @@ BEGIN
     IF NEW.genres IS NOT NULL THEN
         RAISE NOTICE 'NEW.genres = %', NEW.genres;
         --RAISE NOTICE 'NEW.genres.first = %', NEW.genres.first;
-        FOR genre IN NEW.genres LOOP --.first..NEW.genres.last LOOP
+        FOR genre IN NEW.genres LOOP
             RAISE NOTICE 'genre = %', genre;
             SELECT id INTO add_genre FROM genres_table WHERE id = genre;
             IF NOT FOUND THEN
@@ -162,7 +162,7 @@ BEGIN
 
     --Проверить что id_studio задан верно
     IF NEW.studios IS NOT NULL THEN
-        FOR studio IN NEW.studios.first..NEW.studios.last LOOP
+        FOR studio IN NEW.studios LOOP
             SELECT id INTO add_studio FROM studio_table WHERE id = studio;
             IF NOT FOUND THEN
                 RAISE EXCEPTION 'studio % not found', studio;
@@ -172,7 +172,7 @@ BEGIN
 
     --Проверить что id_video задан верно
     IF NEW.videos IS NOT NULL THEN
-        FOR video IN NEW.videos.first..NEW.videos.last LOOP
+        FOR video IN NEW.videos LOOP
             SELECT hash INTO add_video FROM video_table WHERE hash = video;
             IF NOT FOUND THEN
                 RAISE EXCEPTION 'video % not found', video;
@@ -180,14 +180,14 @@ BEGIN
         end LOOP;
     END IF;
 
-    --Проверить что id_screenshot задан верно
+    --Проверить что id_screenshot задан верно ВСЕ ДОЛЖНО БЫТЬ В ИМАЖЕ
     IF NEW.screenshots IS NOT NULL THEN
-        FOR screenshot IN NEW.screenshots.first..NEW.screenshots.last LOOP
+        FOR screenshot IN NEW.screenshots LOOP
             SELECT hash INTO add_screenshot FROM screenshots_table WHERE hash = video;
             IF NOT FOUND THEN
                 RAISE EXCEPTION 'screenshot % not found', screenshot;
             END IF;
-        end LOOP;
+        END LOOP;
     END IF;
 
     --Проверить, что количество вышедщих серий не больше общего количества серий
@@ -198,7 +198,7 @@ BEGIN
     --Проверить, что дата начала выпуска анимэ не больше даты конца выпуска
     IF NEW.aired_on > NEW.released_on THEN
         RAISE EXCEPTION 'released_on must be lower then aired_on';
-    END IF
+    END IF;
 
     RETURN NEW;
 END;
