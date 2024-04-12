@@ -28,4 +28,4 @@ jobs:
       - name: Terraform apply
         run: |
           apk add make bash
-          make terraform.plan
+          make terraform.apply
