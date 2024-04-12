@@ -1,19 +1,21 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/rs/cors"
 	"golang.org/x/net/http2"
 )
 
 func main() {
-	fmt.Println("Hello world")
-	http.HandleFunc("/", sayhello)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", sayhello)
 
 	server := &http.Server{
-		Addr: ":8080",
+		Addr:    ":8080",
+		Handler: cors.Default().Handler(mux),
 	}
 	http2.ConfigureServer(server, &http2.Server{})
 
