@@ -54,10 +54,10 @@ api.push:
 
 terraform.plan:
 	cd terraform
-	terraform init
-	terraform plan
+	TF_VAR_api_container=${DOCKER_IMAGE_URL} terraform init
+	TF_VAR_api_container=${DOCKER_IMAGE_URL} terraform plan
 
 terraform.apply:
 	cd terraform
-	terraform init
-	terraform apply -auto-approve
+	TF_VAR_api_container=${DOCKER_IMAGE_URL} terraform init
+	TF_VAR_api_container=${DOCKER_IMAGE_URL} terraform apply -auto-approve
