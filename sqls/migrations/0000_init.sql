@@ -27,6 +27,27 @@ EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
 
+DO $$ BEGIN
+    CREATE TYPE role AS ENUM ('OP', 'EP', 'OST', 'Other');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE type_track_list AS ENUM ('Album', 'Single', 'Other');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE tracks_type AS (
+        track_id uuid,
+        is_tv_sized boolean,
+        is_instrumental boolean);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
 CREATE TABLE IF NOT EXISTS images_table(
     hash varchar(64) PRIMARY KEY, --IPFS CID
     source_img varchar(255), --URL адрес изображения большого размера на сайте shikimori
@@ -69,6 +90,25 @@ CREATE TABLE IF NOT EXISTS audio_table(
     hash varchar(64) PRIMARY KEY, --id аудио IPFS CID
     source_url varchar(255), --url аудиозаписи
     duration integer --длительность аудио в минутах
+);
+
+CREATE TABLE IF NOT EXISTS track_table(
+    id uuid PRIMARY KEY, --id трека IPFS CID
+    description varchar --описане трека
+);
+
+CREATE TABLE IF NOT EXISTS track_revision_table(
+    track_id uuid PRIMARY KEY, --id трека
+    hash varchar(64), --hash аудио или видео IPFS CID
+    is_tv_sised boolean,
+    is_instrumental boolean
+);
+
+CREATE TABLE IF NOT EXISTS lyrics_table(
+    track_id uuid PRIMARY KEY, --id трека
+    is_tv_sised boolean,
+    lang varchar(128), --язык песни
+    text varchar --текст песни
 );
 
 CREATE TABLE IF NOT EXISTS animes(
@@ -128,7 +168,24 @@ CREATE TABLE IF NOT EXISTS person(
     mangaka BOOLEAN DEFAULT FALSE,
     seyu BOOLEAN DEFAULT FALSE,
     updated_at timestamp with time zone DEFAULT NOW() --дата обновления
+);
 
+CREATE TABLE IF NOT EXISTS track_list_table(
+    id uuid PRIMARY KEY, --id трек-листа
+    tracks tracks_type,
+    type_track_list type_track_list
+);
+
+CREATE TABLE IF NOT EXISTS track_to_person(
+    track_id uuid PRIMARY KEY, --id трек-листа
+    person_id boolean, --id человека
+    role role
+);
+
+CREATE TABLE IF NOT EXISTS track_list_to_person(
+    track_list_id uuid PRIMARY KEY, --id трек-листа
+    person_id boolean, --id человека
+    role role
 );
 
 CREATE OR REPLACE FUNCTION anime_validate() RETURNS trigger AS $anime_validate$
@@ -151,18 +208,19 @@ BEGIN
     IF NEW.genres IS NOT NULL THEN
         RAISE NOTICE 'NEW.genres = %', NEW.genres;
         --RAISE NOTICE 'NEW.genres.first = %', NEW.genres.first;
-        FOR genre IN NEW.genres LOOP
+        FOREACH genre IN ARRAY(NEW.genres) LOOP
             RAISE NOTICE 'genre = %', genre;
             SELECT id INTO add_genre FROM genres_table WHERE id = genre;
             IF NOT FOUND THEN
                 RAISE EXCEPTION 'genre % not found', genre;
             END IF;
+            --RAISE NOTICE 'add_genre = %', add_genre;
         end LOOP;
     END IF;
 
     --Проверить что id_studio задан верно
     IF NEW.studios IS NOT NULL THEN
-        FOR studio IN NEW.studios LOOP
+        FOREACH studio IN ARRAY(NEW.studios) LOOP
             SELECT id INTO add_studio FROM studio_table WHERE id = studio;
             IF NOT FOUND THEN
                 RAISE EXCEPTION 'studio % not found', studio;
@@ -172,7 +230,7 @@ BEGIN
 
     --Проверить что id_video задан верно
     IF NEW.videos IS NOT NULL THEN
-        FOR video IN NEW.videos LOOP
+        FOREACH video IN ARRAY(NEW.videos) LOOP
             SELECT hash INTO add_video FROM video_table WHERE hash = video;
             IF NOT FOUND THEN
                 RAISE EXCEPTION 'video % not found', video;
@@ -182,8 +240,8 @@ BEGIN
 
     --Проверить что id_screenshot задан верно ВСЕ ДОЛЖНО БЫТЬ В ИМАЖЕ
     IF NEW.screenshots IS NOT NULL THEN
-        FOR screenshot IN NEW.screenshots LOOP
-            SELECT hash INTO add_screenshot FROM screenshots_table WHERE hash = video;
+        FOREACH screenshot IN ARRAY(NEW.screenshots) LOOP
+            SELECT hash INTO add_screenshot FROM images_table WHERE hash = screenshot;
             IF NOT FOUND THEN
                 RAISE EXCEPTION 'screenshot % not found', screenshot;
             END IF;
