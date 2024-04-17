@@ -1,8 +1,3 @@
---CREATE TYPE IF NOT EXISTS status AS ENUM ('anons', 'ongoing', 'released');
---CREATE TYPE IF NOT EXISTS kind AS ENUM ('tv', 'movie', 'ova', 'ona', 'other');
---CREATE TYPE IF NOT EXISTS rating AS ENUM ('r_plus', 'pg_13', 'r', 'g', 'rx');
---CREATE TYPE IF NOT EXISTS kind_video AS ENUM ('pv', 'op', 'cm', 'ed', 'mv');
-
 DO $$ BEGIN
     CREATE TYPE status AS ENUM ('anons', 'ongoing', 'released');
 EXCEPTION
@@ -177,16 +172,32 @@ CREATE TABLE IF NOT EXISTS track_list_table(
 );
 
 CREATE TABLE IF NOT EXISTS track_to_person(
-    track_id uuid PRIMARY KEY, --id трек-листа
-    person_id boolean, --id человека
-    role role
+    track_id uuid REFERENCES track_table, --id трека
+    person_id uuid REFERENCES person, --id человека
+    role role,
+    PRIMARY KEY (track_id, person_id)
 );
 
+CREATE INDEX IF NOT EXISTS track_to_person_reverse ON track_to_person USING BTREE (person_id, track_id);
+
 CREATE TABLE IF NOT EXISTS track_list_to_person(
-    track_list_id uuid PRIMARY KEY, --id трек-листа
-    person_id boolean, --id человека
-    role role
+    track_list_id uuid REFERENCES track_list_table, --id трек-листа
+    person_id uuid REFERENCES person, --id человека
+    role role,
+    PRIMARY KEY (track_list_id, person_id)
 );
+
+CREATE INDEX IF NOT EXISTS track_list_to_person_reverse ON track_list_to_person USING BTREE (person_id, track_list_id);
+
+CREATE TABLE IF NOT EXISTS track_role(
+    anime_id uuid REFERENCES animes, --id аниме
+    track_id uuid REFERENCES track_table, --id трека
+    role role,
+    PRIMARY KEY (anime_id, track_id)
+);
+
+CREATE INDEX IF NOT EXISTS track_role_reverse ON track_role USING BTREE (track_id, anime_id);
+
 
 CREATE OR REPLACE FUNCTION anime_validate() RETURNS trigger AS $anime_validate$
 DECLARE
@@ -209,7 +220,6 @@ BEGIN
         RAISE NOTICE 'NEW.genres = %', NEW.genres;
         --RAISE NOTICE 'NEW.genres.first = %', NEW.genres.first;
         FOREACH genre IN ARRAY(NEW.genres) LOOP
-            RAISE NOTICE 'genre = %', genre;
             SELECT id INTO add_genre FROM genres_table WHERE id = genre;
             IF NOT FOUND THEN
                 RAISE EXCEPTION 'genre % not found', genre;

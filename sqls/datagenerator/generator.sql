@@ -40,7 +40,7 @@ $image_generate$ LANGUAGE plpgsql;
 
 
 -- Функция генерирует таблицу studio_table
-CREATE OR REPLACE FUNCTION stidio_generate() RETURNS VOID AS $stidio_generate$
+CREATE OR REPLACE FUNCTION studio_generate() RETURNS VOID AS $studio_generate$
 DECLARE
     --Задаем количество записей в таблице image_table
     number integer := 100;
@@ -54,9 +54,9 @@ BEGIN
     FROM
         generate_series(1, number) s;
 END;
-$stidio_generate$ LANGUAGE plpgsql;
+$studio_generate$ LANGUAGE plpgsql;
 
-SELECT stidio_generate();
+SELECT studio_generate();
 SELECT * FROM studio_table;
 SELECT * FROM images_table;
 
@@ -98,7 +98,7 @@ DECLARE
     number_episodes integer := 0; --количество серий
     data_issue timestamp with time zone;
     i integer;
-    row_number_genres integer := 0; --количество записей в таблице genres_table
+    total_genres integer := 0; --количество записей в таблице genres_table
     genre_number integer := 0; --количество выбранных записей из таблицы genres_table
     array_genres varchar(32)[] := NULL; --массив id выбранных записей из таблицы genres_table
 
@@ -117,14 +117,14 @@ DECLARE
 BEGIN
     data_issue := '2000-01-01 00:00:00'::timestamp +
                   ('2023-12-31 23:59:59'::timestamp - '2000-01-01 00:00:00'::timestamp) * RANDOM();
-    SELECT COUNT(*) INTO row_number_genres FROM genres_table; --считает кол-во строк в таблице genres_table
+    SELECT COUNT(*) INTO total_genres FROM genres_table; --считает кол-во строк в таблице genres_table
     SELECT COUNT(*) INTO row_number_studios FROM studio_table; --считает кол-во строк в таблице studio_table
     SELECT COUNT(*) INTO row_number_videos FROM video_table; --считает кол-во строк в таблице video_table
 
     FOR i IN 1..5 LOOP
         number_episodes :=  ROUND(RANDOM() * 100);
 
-        genre_number := ROUND(RANDOM()*row_number_genres); --количество выбранных записаей из таблицы genres_table
+        genre_number := ROUND(RANDOM() * total_genres); --количество выбранных записаей из таблицы genres_table
         IF genre_number != 0 THEN
             SELECT ARRAY(SELECT id INTO array_genres FROM genres_table ORDER BY RANDOM() LIMIT genre_number);
             --RAISE NOTICE 'array_genres = %', array_genres;
