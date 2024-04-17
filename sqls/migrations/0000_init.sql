@@ -159,9 +159,9 @@ CREATE TABLE IF NOT EXISTS person(
     groupped_roles jsonb, --роли в аниме: название + количество
     --roles VARCHAR(255)[], --роли в аниме (Лучшие роли?) {[список аниме]}
     --works VARCHAR(255)[], --сделать таблицу anime_to_person (id_person, id_anime, role)
-    producer BOOLEAN DEFAULT FALSE,
-    mangaka BOOLEAN DEFAULT FALSE,
-    seyu BOOLEAN DEFAULT FALSE,
+    producer BOOLEAN,
+    mangaka BOOLEAN,
+    seyu BOOLEAN,
     updated_at timestamp with time zone DEFAULT NOW() --дата обновления
 );
 
