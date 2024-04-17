@@ -15,6 +15,10 @@ CURRENT_APP_VERSION := $(shell \
 
 DOCKER_IMAGE_URL ?= rg.fr-par.scw.cloud/opdb/api:${CURRENT_APP_VERSION}
 
+.PHONY: vars local_run.start_postgres local_run.stop_postgres tests.postgres.migrations
+.PHONY: tests.postgres.test tests.postgres registry_login api.build api.push
+.PHONY: terraform.plan terraform.apply
+
 vars: ## Показать переменные
 	: -------------------------------------------------------------------
 	:  CURRENT_APP_VERSION: $(CURRENT_APP_VERSION)
@@ -28,18 +32,31 @@ local_run.stop_postgres:
 	docker stop postgres-test
 	docker rm -fv postgres-test
 
-tests.postgres:
-	make local_run.start_postgres
-	sleep 10
+tests.postgres.migrations:
 	: -------------------------------------------------------------------
 	:  MIGRATIONS
 	: -------------------------------------------------------------------
 	docker exec --user postgres postgres-test psql -f /sqls/migrations/0000_init.sql
 
+tests.postgres.data_create:
+	: -------------------------------------------------------------------
+	:  DATA CREATE
+	: -------------------------------------------------------------------
+	docker exec --user postgres postgres-test psql -f /sqls/datagenerator/generator.sql
+
+tests.postgres.test:
 	: -------------------------------------------------------------------
 	:  TEST: table1.sql
 	: -------------------------------------------------------------------
 	#docker exec --user postgres postgres-test psql -f /sqls/tests/table1.sql
+
+tests.postgres:
+	make local_run.start_postgres
+	sleep 10
+	make tests.postgres.migrations
+	make tests.postgres.migrations # Повторно применяем миграции для проверки IF EXISTS
+	make tests.postgres.data_create
+	make tests.postgres.test
 
 	make local_run.stop_postgres
 
