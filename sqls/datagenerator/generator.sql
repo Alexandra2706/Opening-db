@@ -102,11 +102,11 @@ DECLARE
     genre_number integer := 0; --количество выбранных записей из таблицы genres_table
     array_genres varchar(32)[] := NULL; --массив id выбранных записей из таблицы genres_table
 
-    row_number_studios integer := 0; --количество записей в таблице studio_table
+    total_studios integer := 0; --количество записей в таблице studio_table
     studio_number integer :=0; --количество выбранных записей из таблицы studio_table
     array_studios uuid[] := NULL; --массив id выбранных записей из таблицы studio_table
 
-    row_number_videos integer := 0; --количество записей в таблице video_table
+    total_videos integer := 0; --количество записей в таблице video_table
     video_number integer :=0; --количество выбранных записей из таблицы video_table
     array_videos varchar(64)[] := NULL; --массив hash выбранных записей из таблицы video_table
 
@@ -118,8 +118,8 @@ BEGIN
     data_issue := '2000-01-01 00:00:00'::timestamp +
                   ('2023-12-31 23:59:59'::timestamp - '2000-01-01 00:00:00'::timestamp) * RANDOM();
     SELECT COUNT(*) INTO total_genres FROM genres_table; --считает кол-во строк в таблице genres_table
-    SELECT COUNT(*) INTO row_number_studios FROM studio_table; --считает кол-во строк в таблице studio_table
-    SELECT COUNT(*) INTO row_number_videos FROM video_table; --считает кол-во строк в таблице video_table
+    SELECT COUNT(*) INTO total_studios FROM studio_table; --считает кол-во строк в таблице studio_table
+    SELECT COUNT(*) INTO total_videos FROM video_table; --считает кол-во строк в таблице video_table
 
     FOR i IN 1..5 LOOP
         number_episodes :=  ROUND(RANDOM() * 100);
@@ -130,12 +130,12 @@ BEGIN
             --RAISE NOTICE 'array_genres = %', array_genres;
         END IF;
 
-        studio_number := ROUND(RANDOM()*row_number_studios); --количество выбранных записаей из таблицы studio_table
+        studio_number := ROUND(RANDOM()*total_studios); --количество выбранных записаей из таблицы studio_table
         IF studio_number != 0 THEN
             SELECT ARRAY(SELECT id INTO array_studios FROM studio_table ORDER BY RANDOM() LIMIT studio_number);
         END IF;
 
-        video_number := ROUND(RANDOM()*row_number_studios); --количество выбранных записаей из таблицы video_table
+        video_number := ROUND(RANDOM()*total_studios); --количество выбранных записаей из таблицы video_table
         IF video_number != 0 THEN
             SELECT ARRAY(SELECT hash INTO array_videos FROM video_table ORDER BY RANDOM() LIMIT video_number);
         END IF;
