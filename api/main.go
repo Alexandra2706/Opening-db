@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/rs/cors"
-	"github.com/veqryn/h2c"
 	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 )
 
 func main() {
@@ -14,14 +14,16 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", sayhello)
 
-	h2cWrapper := &h2c.HandlerH2C{
-		Handler:  cors.Default().Handler(mux),
-		H2Server: &http2.Server{},
-	}
+	//h2cWrapper := &h2c.HandlerH2C{
+	//	Handler:  cors.Default().Handler(mux),
+	//	H2Server: &http2.Server{},
+	//}
+
+	http2Server := &http2.Server{}
 
 	server := &http.Server{
 		Addr:    ":8080",
-		Handler: h2cWrapper,
+		Handler: h2c.NewHandler(cors.Default().Handler(mux), http2Server),
 	}
 
 	err := server.ListenAndServe()

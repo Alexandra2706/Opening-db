@@ -4,7 +4,6 @@ go 1.22
 
 require (
 	github.com/rs/cors v1.10.1
-	github.com/veqryn/h2c v1.0.0
 	golang.org/x/net v0.24.0
 )
 

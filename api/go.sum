@@ -1,7 +1,5 @@
 github.com/rs/cors v1.10.1 h1:L0uuZVXIKlI1SShY2nhFfo44TYvDPQ1w4oFkUJNfhyo=
 github.com/rs/cors v1.10.1/go.mod h1:XyqrcTp5zjWr1wsJ8PIRZssZ8b/WMcMf71DJnit4EMU=
-github.com/veqryn/h2c v1.0.0 h1:Utvhq/8uJrDwNvCtZnZmwR0m4L0ItOBlhm1nOJmRTLA=
-github.com/veqryn/h2c v1.0.0/go.mod h1:CEmiiyUDF1O1gT1uGXZpG9aeI6TSmyAg4j5feNPVFjQ=
 golang.org/x/net v0.24.0 h1:1PcaxkF854Fu3+lvBIx5SYn9wRlBzzcnHZSiaFFAb0w=
 golang.org/x/net v0.24.0/go.mod h1:2Q7sJY5mzlzWjKtYUEXSlBWCdyaioyXzRB2RtU8KVE8=
 golang.org/x/text v0.14.0 h1:ScX5w1eTa3QqT8oi6+ziP7dTV1S2+ALU0bI+0zXKWiQ=
