@@ -49,6 +49,15 @@ func GetAnimeInfo(id int) (*Anime, error) {
 	return anime, nil
 }
 
+func GetPersonInfo(id int) (*Person, error) {
+	person := &Person{}
+	err := MakeRequest("people/"+strconv.Itoa(id), person)
+	if err != nil {
+		return nil, err
+	}
+	return person, nil
+}
+
 func ListAnime() ([]int, error) {
 	ids := make([]int, 0)
 	i := 0

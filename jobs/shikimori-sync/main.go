@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	maxNumberPage = 5
+	maxNumberPage = 6
 )
 
 func main() {
@@ -27,4 +27,12 @@ func main() {
 		log.Println("List of anime ids:", anime)
 	}
 
+	for i := 1; i < maxNumberPage; i++ {
+		person, err := shikimori_api.GetPersonInfo(i)
+		if err != nil {
+			log.Printf("Error in person %d: %q", i, err.Error())
+		} else {
+			log.Printf("Person %d, name %q exists", i, person.Name)
+		}
+	}
 }

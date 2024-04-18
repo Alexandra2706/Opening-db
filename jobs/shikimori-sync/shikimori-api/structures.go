@@ -110,3 +110,37 @@ type AnimeShort struct {
 	AiredOn       string      `json:"aired_on"`
 	ReleasedOn    interface{} `json:"released_on"`
 }
+
+type Person struct {
+	Id      int    `json:"id"`
+	Name    string `json:"name"`
+	Russian string `json:"russian"`
+	Image   struct {
+		Original string `json:"original"`
+		Preview  string `json:"preview"`
+		X96      string `json:"x96"`
+		X48      string `json:"x48"`
+	} `json:"image"`
+	Url      string `json:"url"`
+	Japanese string `json:"japanese"`
+	JobTitle string `json:"job_title"`
+	BirthOn  struct {
+	} `json:"birth_on"`
+	DeceasedOn struct {
+	} `json:"deceased_on"`
+	Website          string        `json:"website"`
+	GrouppedRoles    []interface{} `json:"groupped_roles"`
+	Roles            []interface{} `json:"roles"`
+	Works            []interface{} `json:"works"`
+	TopicId          interface{}   `json:"topic_id"`
+	PersonFavoured   bool          `json:"person_favoured"`
+	Producer         bool          `json:"producer"`
+	ProducerFavoured bool          `json:"producer_favoured"`
+	Mangaka          bool          `json:"mangaka"`
+	MangakaFavoured  bool          `json:"mangaka_favoured"`
+	Seyu             bool          `json:"seyu"`
+	SeyuFavoured     bool          `json:"seyu_favoured"`
+	UpdatedAt        time.Time     `json:"updated_at"`
+	ThreadId         interface{}   `json:"thread_id"`
+	Birthday         struct{}      `json:"birthday"`
+}
