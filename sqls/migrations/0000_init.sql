@@ -55,11 +55,13 @@ CREATE TABLE IF NOT EXISTS ipfs_object(
 );
 
 CREATE TABLE IF NOT EXISTS genres_table(
-    id varchar(32) PRIMARY KEY, -- id жанра uuid
+    id varchar(100) PRIMARY KEY, -- id жанра uuid
     shikimori_id integer, --id с сайта shikimori
     genre_name varchar(100), --название жанра на английском
     russian varchar(100) --название жанра на русском
 );
+
+CREATE INDEX IF NOT EXISTS genres_table_shikimori_id ON genres_table USING BTREE (shikimori_id);
 
 CREATE TABLE IF NOT EXISTS studio_table(
     id uuid PRIMARY KEY, --id студии
@@ -108,7 +110,7 @@ CREATE TABLE IF NOT EXISTS lyrics_table(
 
 CREATE TABLE IF NOT EXISTS animes(
     -- Основные поля:
-    id uuid PRIMARY KEY, --наш уникальный id
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(), --наш уникальный id
     anime_name varchar(255) UNIQUE NOT NULL, --название анимэ
     name_russian varchar(255), --название анимэ на русском
     name_english varchar[], --название анимэ на английском
@@ -125,7 +127,7 @@ CREATE TABLE IF NOT EXISTS animes(
     updated_at timestamp with time zone DEFAULT NOW(), --дата обновления
     next_episode_at varchar(255), --следующая серия ссылка
     image varchar(64) REFERENCES images_table (hash), --постер аниме (изображения на сайте shikimori)
-    genres varchar(32)[], --жанры, может быть несколько
+    genres varchar(100)[], --жанры, может быть несколько
     studios uuid[], --REFERENCES Studio (id), --студии, может быть несколько
     videos varchar(64)[], --REFERENCES Video (id), --эпизоды
     screenshots varchar(64)[], -- REFERENCES Sreenshot (id), --кадры
@@ -173,12 +175,12 @@ CREATE TABLE IF NOT EXISTS track_list_table(
 
 CREATE TABLE IF NOT EXISTS track_to_person(
     track_id uuid REFERENCES track_table, --id трека
-    person_id uuid REFERENCES person, --id человека
+    person_id uuid REFERENCES personCREATE INDEX IF NOT EXISTS track_to_person_reverse ON track_to_person USING BTREE (person_id, track_id);, --id человека
     role role,
     PRIMARY KEY (track_id, person_id)
 );
 
-CREATE INDEX IF NOT EXISTS track_to_person_reverse ON track_to_person USING BTREE (person_id, track_id);
+
 
 CREATE TABLE IF NOT EXISTS track_list_to_person(
     track_list_id uuid REFERENCES track_list_table, --id трек-листа
