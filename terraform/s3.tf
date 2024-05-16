@@ -8,7 +8,6 @@ resource "scaleway_object_bucket" "opdb-data" {
 }
 
 resource "scaleway_object_bucket_acl" "opdb-data" {
-  name = "opdb-data"
   bucket = "opdb-data"
   acl = "private"
 }
