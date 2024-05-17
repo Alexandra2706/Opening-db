@@ -2,63 +2,18 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
+	"github.com/google/uuid"
 	"log"
 	"shikimori-sync/postgres"
+	"shikimori-sync/s3"
 	shikimori_api "shikimori-sync/shikimori-api"
-	"strings"
 )
 
 const (
 	maxNumberPage = 6
+	imageEndpoint = "https://shikimori.one"
 )
-
-func CheckRowExists(table, column string, value interface{}) (bool, error) {
-	query := fmt.Sprintf("SELECT %s FROM %s where %s = $1 limit 1", column, table, column)
-	//fmt.Printf("QUERY= %s\n", query)
-	row := postgres.Conn.QueryRow(context.Background(), query, value)
-	fmt.Printf("ROW= %s\n", value)
-	var tmp interface{}
-	err := row.Scan(&tmp)
-	// Тут проблема sql.ErrNoRows = 'sql: no rows in result set',
-	// А у меня err = 'no rows in result set'
-	if err == sql.ErrNoRows {
-		return false, nil
-	}
-	if err == nil {
-		return true, nil
-	}
-	return false, err
-}
-
-func createOrUpdateGenre(shikimoriId int, genreName string, russian string) string {
-	stringId := ""
-	tempStr := strings.ToLower(genreName) // заменить пробелы на нижн подчеркивание
-	for _, i := range tempStr {
-		if i != ' ' {
-			stringId += string(i)
-		}
-		if i == ' ' {
-			stringId += "_"
-		}
-	}
-
-	res, errCheck := CheckRowExists("genres_table", "id", stringId)
-	fmt.Printf("RES, ERR = %q,,, %q\n", res, errCheck)
-	if res == false && errCheck == nil {
-		fmt.Println("For ADD: ", stringId, shikimoriId, genreName, russian)
-		_, err := postgres.Conn.Exec(context.Background(), `
-			INSERT INTO public.genres_table (id, shikimori_id, genre_name, russian) VALUES ($1, $2, $3, $4);`,
-			stringId, shikimoriId, genreName, russian)
-		if err != nil {
-			log.Fatalf("Error: %q", err.Error())
-		}
-
-	}
-
-	return stringId
-}
 
 func main() {
 	defer postgres.CloseConnection()
@@ -71,9 +26,62 @@ func main() {
 	}
 
 	//временно: удаляем все записи из таблицы жанров
-	_, err = postgres.Conn.Exec(context.Background(), "delete from genres_table")
-	if err != nil {
-		log.Println(err)
+	//_, err = postgres.Conn.Exec(context.Background(), "delete from genres_table")
+	//if err != nil {
+	//	log.Println(err)
+	//}
+
+	for _, aid := range animeList {
+		anime, err := shikimori_api.GetAnimeInfo(aid)
+		if err != nil {
+			log.Printf("Error in anime %d: %q", aid, err.Error())
+			continue
+		}
+		log.Printf("Saving anime %d, called %q", aid, anime.Name)
+
+		var genresList = []string{}
+		for i := 0; i < len(anime.Genres); i++ {
+			res := postgres.CreateOrUpdateGenre(anime.Genres[i].Id, anime.Genres[i].Name, anime.Genres[i].Russian)
+			genresList = append(genresList, res)
+		}
+
+		var studioList = []uuid.UUID{}
+		for i := 0; i < len(anime.Studios); i++ {
+			err = s3.CreateOrUpdateImage(imageEndpoint + anime.Studios[i].Image)
+			if err != nil {
+				log.Printf("Error in get image: %q", err.Error())
+			}
+			res := postgres.CreateOrUpdateStudio(anime.Studios[i].Id, anime.Studios[i].Name, anime.Studios[i].Image)
+			studioList = append(studioList, res)
+		}
+		fmt.Println(studioList)
+
+		//	row := postgres.Conn.QueryRow(context.Background(), `
+		//	INSERT INTO public.animes (anime_name, name_russian, name_english, name_japanese, name_synonyms, anime_status,
+		//	                          episodes, episodes_aired, aired_on, released_on, duration, licensors_ru, franchise,
+		//	                          updated_at, next_episode_at, image, genres, studios)
+		//	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING id;`,
+		//		anime.Name, anime.Russian, anime.English, anime.Japanese, anime.Synonyms, anime.Status,
+		//		anime.Episodes, anime.EpisodesAired, anime.AiredOn, anime.ReleasedOn, anime.Duration, nil, nil,
+		//		anime.UpdatedAt, anime.NextEpisodeAt, nil, genresList, nil)
+		//
+		//	var id string
+		//	err = row.Scan(&id)
+		//	if err != nil {
+		//		log.Printf("Error when saving anime %d: %q", aid, err.Error())
+		//		continue
+		//	}
+		//	log.Printf("Anime %q saved!", anime.Name)
+		//
+	}
+
+	for i := 1; i < maxNumberPage; i++ {
+		person, err := shikimori_api.GetPersonInfo(i)
+		if err != nil {
+			log.Printf("Error in person %d: %q", i, err.Error())
+		} else {
+			log.Printf("Person %d, name %q exists", i, person.Name)
+		}
 	}
 
 	// Смотрим содержимое таблицы жанров
@@ -103,81 +111,40 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("GANRE_TABLE$")
+	fmt.Println("GENRE_TABLE$")
 	fmt.Println(rowSlice)
 
 	//конец просмотра содержимого таблицы
 
-	for _, aid := range animeList {
-		anime, err := shikimori_api.GetAnimeInfo(aid)
-		if err != nil {
-			log.Printf("Error in anime %d: %q", aid, err.Error())
-			continue
-		}
-		log.Printf("Saving anime %d, called %q", aid, anime.Name)
+	// Смотрим содержимое таблицы студий
+	//type RowStudio struct {
+	//	id           uuid.UUID
+	//	shikimori_id string
+	//	studio_name  string
+	//	image        string
+	//}
+	//
+	//rows, err = postgres.Conn.Query(context.Background(), "SELECT * FROM public.studio_table")
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//defer rows.Close()
+	//
+	//var rowSlice1 []RowStudio
+	//for rows.Next() {
+	//	var r RowStudio
+	//	err := rows.Scan(&r.id, &r.shikimori_id, &r.studio_name, &r.image)
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//	rowSlice1 = append(rowSlice1, r)
+	//}
+	//if err := rows.Err(); err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//fmt.Println("STUDIO_TABLE$")
+	//fmt.Println(rowSlice1)
 
-		for i := 0; i < len(anime.Genres); i++ {
-			res := createOrUpdateGenre(anime.Genres[i].Id, anime.Genres[i].Name, anime.Genres[i].Russian)
-			fmt.Println(res)
-		}
-
-		// Смотрим содержимое таблицы жанров
-		type Row struct {
-			id           string
-			shikimori_id string
-			genre_name   string
-			russian      string
-		}
-
-		rows, err := postgres.Conn.Query(context.Background(), "SELECT * FROM genres_table")
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer rows.Close()
-
-		var rowSlice []Row
-		for rows.Next() {
-			var r Row
-			err := rows.Scan(&r.id, &r.shikimori_id, &r.genre_name, &r.russian)
-			if err != nil {
-				log.Fatal(err)
-			}
-			rowSlice = append(rowSlice, r)
-		}
-		if err := rows.Err(); err != nil {
-			log.Fatal(err)
-		}
-
-		fmt.Println("GANRE_TABLE$")
-		fmt.Println(rowSlice)
-
-		//конец просмотра содержимого таблицы
-
-		//row := postgres.Conn.QueryRow(context.Background(), `
-		//INSERT INTO public.animes (anime_name, name_russian, name_english, name_japanese, name_synonyms, anime_status,
-		//                           episodes, episodes_aired, aired_on, released_on, duration, licensors_ru, franchise,
-		//                           updated_at, next_episode_at, image, genres)
-		//VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING id;`,
-		//	anime.Name, anime.Russian, anime.English, anime.Japanese, anime.Synonyms, anime.Status,
-		//	anime.Episodes, anime.EpisodesAired, anime.AiredOn, anime.ReleasedOn, anime.Duration, nil, nil,
-		//	anime.UpdatedAt, anime.NextEpisodeAt, nil, nil)
-
-		//var id string
-		//err = row.Scan(&id)
-		//if err != nil {
-		//	log.Printf("Error when saving anime %d: %q", aid, err.Error())
-		//	continue
-		//}
-		//log.Printf("Anime %q saved!", anime.Name)
-
-	}
-
-	for i := 1; i < maxNumberPage; i++ {
-		person, err := shikimori_api.GetPersonInfo(i)
-		if err != nil {
-			log.Printf("Error in person %d: %q", i, err.Error())
-		} else {
-			log.Printf("Person %d, name %q exists", i, person.Name)
-		}
-	}
+	//конец просмотра содержимого таблицы
 }

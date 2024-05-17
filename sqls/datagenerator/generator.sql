@@ -24,17 +24,17 @@ SELECT * FROM genres_table;
 -- возвращает hash
 CREATE OR REPLACE FUNCTION image_generate() RETURNS VARCHAR(64) AS $image_generate$
 DECLARE
-    current_hash varchar(64) := NULL;
+    current_path varchar(255) := NULL;
 BEGIN
-    current_hash := md5(random()::text);
-    INSERT INTO images_table (hash, source_img)
+    current_path := md5(random()::text);
+    INSERT INTO images_table (path, source_img)
     SELECT
-        current_hash AS hash,
+        current_path AS path,
         md5(random()::text)::char(10) AS source_img
     FROM
         generate_series(1, 1);
-    INSERT INTO ipfs_object (hash, mime_type) VALUES (current_hash, 'image/jpeg');
-    RETURN current_hash;
+    INSERT INTO ipfs_object (path, mime_type) VALUES (current_path, 'image/jpeg');
+    RETURN current_path;
 END;
 $image_generate$ LANGUAGE plpgsql;
 
@@ -47,7 +47,7 @@ DECLARE
 BEGIN
     INSERT INTO studio_table (id, shikimori_id, studio_name, image)
     SELECT
-        gen_random_uuid() AS hash,
+        gen_random_uuid() AS path,
         s AS shikimori_id,
         md5(random()::text)::char(10) AS studio_name,
         image_generate() AS image
@@ -66,11 +66,11 @@ CREATE OR REPLACE FUNCTION video_generate() RETURNS VOID AS $video_generate$
 DECLARE
     --Задаем количество записей в таблице video_table
     number integer := 10;
-    hash_video varchar(64) := NULL;
+    path_video varchar(255) := NULL;
 BEGIN
-    INSERT INTO video_table (hash, shikimori_id, url, player_url, video_name, video_kind)
+    INSERT INTO video_table (path, shikimori_id, url, player_url, video_name, video_kind)
     SELECT
-        md5(random()::text) AS hash,
+        md5(random()::text) AS path,
         s AS shikimori_id,
         md5(random()::text)::char(20) AS url,
         md5(random()::text)::char(20) AS player_url,
@@ -78,8 +78,8 @@ BEGIN
         (array['pv', 'op', 'cm', 'ed', 'mv'])[floor(random() * 5 + 1)]::text::kind_video AS video_kind
     FROM
         generate_series(1, number) s;
-    FOR hash_video IN SELECT hash FROM video_table LOOP
-        INSERT INTO ipfs_object (hash, mime_type) VALUES (hash_video, 'video/mp4');
+    FOR path_video IN SELECT path FROM video_table LOOP
+        INSERT INTO ipfs_object (path, mime_type) VALUES (path_video, 'video/mp4');
     END LOOP;
 END;
 $video_generate$ LANGUAGE plpgsql;
@@ -137,7 +137,7 @@ BEGIN
 
         video_number := ROUND(RANDOM()*total_studios); --количество выбранных записаей из таблицы video_table
         IF video_number != 0 THEN
-            SELECT ARRAY(SELECT hash INTO array_videos FROM video_table ORDER BY RANDOM() LIMIT video_number);
+            SELECT ARRAY(SELECT path INTO array_videos FROM video_table ORDER BY RANDOM() LIMIT video_number);
         END IF;
 
         screenshots_number := ROUND(RANDOM()*max_screenshots_number); --количество скриншотов для таблицы animes
