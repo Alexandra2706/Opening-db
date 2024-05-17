@@ -51,7 +51,8 @@ func main() {
 			if err != nil {
 				log.Printf("Error in get image: %q", err.Error())
 			}
-			res := postgres.CreateOrUpdateStudio(anime.Studios[i].Id, anime.Studios[i].Name, anime.Studios[i].Image)
+			fmt.Println("данные студии", anime.Studios[i].Id, anime.Studios[i].Name, anime.Studios[i].Image)
+			res := postgres.CreateOrUpdateStudio(anime.Studios[i].Id, anime.Studios[i].Name, imageEndpoint+anime.Studios[i].Image)
 			studioList = append(studioList, res)
 		}
 		fmt.Println(studioList)
