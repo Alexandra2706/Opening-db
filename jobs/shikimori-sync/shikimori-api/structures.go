@@ -14,20 +14,20 @@ type Anime struct {
 	} `json:"image"`
 	Url               string        `json:"url"`
 	Kind              string        `json:"kind"`
-	Score             string        `json:"score"`
+	Score             *string       `json:"score"`
 	Status            string        `json:"status"`
-	Episodes          int           `json:"episodes"`
-	EpisodesAired     int           `json:"episodes_aired"`
-	AiredOn           string        `json:"aired_on"`
-	ReleasedOn        string        `json:"released_on"`
+	Episodes          *int          `json:"episodes"`
+	EpisodesAired     *int          `json:"episodes_aired"`
+	AiredOn           *string       `json:"aired_on"`
+	ReleasedOn        *string       `json:"released_on"`
 	Rating            string        `json:"rating"`
 	English           []string      `json:"english"`
 	Japanese          []string      `json:"japanese"`
 	Synonyms          []interface{} `json:"synonyms"`
 	LicenseNameRu     string        `json:"license_name_ru"`
 	Duration          int           `json:"duration"`
-	Description       string        `json:"description"`
-	DescriptionHtml   string        `json:"description_html"`
+	Description       *string       `json:"description"`
+	DescriptionHtml   *string       `json:"description_html"`
 	DescriptionSource interface{}   `json:"description_source"`
 	Franchise         string        `json:"franchise"`
 	Favoured          bool          `json:"favoured"`

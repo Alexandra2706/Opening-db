@@ -32,7 +32,7 @@ func GetImage(sourceURL string) *Image {
 		return nil
 	}
 	if err != nil {
-		log.Printf("Error in get image: %q", err.Error())
+		log.Fatalf("Error in get image: %q", err.Error())
 	}
 
 	return dbImg

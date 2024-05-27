@@ -11,7 +11,7 @@ EXCEPTION
 END $$;
 
 DO $$ BEGIN
-    CREATE TYPE rating AS ENUM ('r_plus', 'pg_13', 'r', 'g', 'rx');
+    CREATE TYPE rating AS ENUM ('r_plus', 'pg_13', 'r', 'g', 'rx', 'pg');
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS studio_table(
     studio_name varchar(255), --название студии
     --filtered_name varchar(100), --надо?
     --real boolean, --надо? и что это?
-    image varchar(64) REFERENCES images_table (source_img) --url логотипа студии
+    image varchar(255) REFERENCES images_table (source_img) --url логотипа студии
 );
 
 CREATE TABLE IF NOT EXISTS video_table(
@@ -135,8 +135,8 @@ CREATE TABLE IF NOT EXISTS animes(
     image varchar(255) REFERENCES images_table (source_img), --постер аниме (изображения на сайте shikimori)
     genres varchar(255)[], --жанры, может быть несколько
     studios uuid[], --REFERENCES Studio (id), --студии, может быть несколько
-    videos varchar(64)[], --REFERENCES Video (id), --эпизоды
-    screenshots varchar(64)[], -- REFERENCES Sreenshot (id), --кадры
+    videos varchar(255)[], --REFERENCES Video (id), --эпизоды
+    screenshots varchar(255)[], -- REFERENCES Sreenshot (id), --кадры
 
     -- shikimori data:
     shikimori_id integer UNIQUE NOT NULL, --id с сайта shikimori
@@ -211,14 +211,14 @@ CREATE OR REPLACE FUNCTION anime_validate() RETURNS trigger AS $anime_validate$
 DECLARE
     --Создаем переменные для записи результата SELECT
     --и циклов
-    add_genre varchar(32) := NULL;
-    genre varchar(32);
+    add_genre varchar(255) := NULL;
+    genre varchar(255);
     add_studio uuid := NULL;
     studio uuid;
-    add_video varchar(64) := NULL;
-    video varchar(64);
-    add_screenshot varchar(64) := NULL;
-    screenshot varchar(64);
+    add_video varchar(255) := NULL;
+    video varchar(255);
+    add_screenshot varchar(255) := NULL;
+    screenshot varchar(255);
 BEGIN
     --Создаем дату обновления
     NEW.updated_at := current_timestamp;
@@ -259,7 +259,7 @@ BEGIN
     --Проверить что id_screenshot задан верно ВСЕ ДОЛЖНО БЫТЬ В ИМАЖЕ
     IF NEW.screenshots IS NOT NULL THEN
         FOREACH screenshot IN ARRAY(NEW.screenshots) LOOP
-            SELECT path INTO add_screenshot FROM images_table WHERE path = screenshot;
+            SELECT source_img INTO add_screenshot FROM images_table WHERE source_img = screenshot;
             IF NOT FOUND THEN
                 RAISE EXCEPTION 'screenshot % not found', screenshot;
             END IF;

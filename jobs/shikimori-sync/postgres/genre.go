@@ -27,7 +27,7 @@ func CreateOrUpdateGenre(shikimoriId int, genreName string, russian string) stri
 		ON CONFLICT (shikimori_id) DO UPDATE
 		SET genre_name = $3, russian = $4 RETURNING id`, stringId, shikimoriId, genreName, russian).Scan(&stringId)
 	if err != nil {
-		log.Printf("Error in update genre: %q", err.Error())
+		log.Fatalf("Error in update genre: %q", err.Error())
 	}
 	fmt.Printf("Add '%s' in Genre table\n", stringId)
 
