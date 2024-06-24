@@ -65,10 +65,7 @@ func CreateOrUpdateImage(sourceUrl string) error {
 	checkSum := hex.EncodeToString(hash[:])
 	fmt.Println("checkSum: ", checkSum)
 
-	//Проверить в таблице image_table по source_url есть ли запись
-	dbImg := &postgres.Image{}
-
-	dbImg = postgres.GetImage(sourceUrl)
+	dbImg := postgres.GetImage(sourceUrl)
 
 	// если запись в бд существует
 	if dbImg != nil {
@@ -100,6 +97,7 @@ func CreateOrUpdateImage(sourceUrl string) error {
 		FormatSource: mimeType,
 	})
 	if err != nil {
+		DeleteFileFromS3(newPath)
 		return err
 	}
 
