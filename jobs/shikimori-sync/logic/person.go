@@ -20,29 +20,18 @@ func CreateOrUpdatePerson(pid int) {
 	person, err := shikimori_api.GetPersonInfo(pid)
 	if err != nil {
 		log.Fatalf("Error in person %d: %q", pid, err.Error())
-		//continue
 	}
 	log.Printf("Person %d, name %q exists", pid, person.Name)
 
-	// Добавляем image в s3 и images_table, если все ок, то получаем url для таблица анимэ, иначе записываем nil в таблицу анимэ
+	// Добавляем image в s3 и images_table, если все ок, то получаем url для таблица person, иначе записываем nil в таблицу person
 	err = s3.CreateOrUpdateImage(imageEndpoint + person.Image.Original)
 	if err != nil {
 		log.Fatalf("Error in anime image: %q", err.Error())
 	}
 
-	//website VARCHAR(255), --адрес сайта человека
-	//groupped_roles jsonb, --роли в аниме: название + количество
-	//--roles VARCHAR(255)[], --роли в аниме (Лучшие роли?) {[список аниме]}
-	//--works VARCHAR(255)[], --сделать таблицу anime_to_person (id_person, id_anime, role)
-	//producer BOOLEAN,
-	//	mangaka BOOLEAN,
-	//	seyu BOOLEAN,
-	//	updated_at timestamp with time zone DEFAULT NOW() --дата обновления
-
 	birthday, err := json.Marshal(person.BirthOn)
 	if err != nil {
 		log.Fatalf("Error in json birthday: %q", err.Error())
-		//continue
 	}
 
 	fmt.Println("deceased:", string(birthday))
@@ -50,7 +39,6 @@ func CreateOrUpdatePerson(pid int) {
 	deceased, err := json.Marshal(person.DeceasedOn)
 	if err != nil {
 		log.Fatalf("Error in json birthday: %q", err.Error())
-		//continue
 	}
 
 	fmt.Println("deceased:", string(deceased))
