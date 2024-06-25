@@ -1,6 +1,9 @@
 package shikimori_api
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type Anime struct {
 	Id      int    `json:"id"`
@@ -125,22 +128,25 @@ type Person struct {
 	Japanese string `json:"japanese"`
 	JobTitle string `json:"job_title"`
 	BirthOn  struct {
+		Day   *int `json:"day,omitempty"`
+		Year  *int `json:"year,omitempty"`
+		Month *int `json:"month,omitempty"`
 	} `json:"birth_on"`
 	DeceasedOn struct {
 	} `json:"deceased_on"`
-	Website          string        `json:"website"`
-	GrouppedRoles    []interface{} `json:"groupped_roles"`
-	Roles            []interface{} `json:"roles"`
-	Works            []interface{} `json:"works"`
-	TopicId          interface{}   `json:"topic_id"`
-	PersonFavoured   bool          `json:"person_favoured"`
-	Producer         bool          `json:"producer"`
-	ProducerFavoured bool          `json:"producer_favoured"`
-	Mangaka          bool          `json:"mangaka"`
-	MangakaFavoured  bool          `json:"mangaka_favoured"`
-	Seyu             bool          `json:"seyu"`
-	SeyuFavoured     bool          `json:"seyu_favoured"`
-	UpdatedAt        time.Time     `json:"updated_at"`
-	ThreadId         interface{}   `json:"thread_id"`
-	Birthday         struct{}      `json:"birthday"`
+	Website          string           `json:"website"`
+	GrouppedRoles    *json.RawMessage `json:"groupped_roles"`
+	Roles            []interface{}    `json:"roles"`
+	Works            []interface{}    `json:"works"`
+	TopicId          interface{}      `json:"topic_id"`
+	PersonFavoured   bool             `json:"person_favoured"`
+	Producer         bool             `json:"producer"`
+	ProducerFavoured bool             `json:"producer_favoured"`
+	Mangaka          bool             `json:"mangaka"`
+	MangakaFavoured  bool             `json:"mangaka_favoured"`
+	Seyu             bool             `json:"seyu"`
+	SeyuFavoured     bool             `json:"seyu_favoured"`
+	UpdatedAt        time.Time        `json:"updated_at"`
+	ThreadId         interface{}      `json:"thread_id"`
+	Birthday         struct{}         `json:"birthday"`
 }

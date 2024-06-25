@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	maxNumberPage = 6
+	maxNumberPage = 30
 	imageEndpoint = "https://shikimori.one"
 )
 
@@ -54,12 +54,7 @@ func main() {
 	}
 
 	for i := 1; i < maxNumberPage; i++ {
-		person, err := shikimori_api.GetPersonInfo(i)
-		if err != nil {
-			log.Printf("Error in person %d: %q", i, err.Error())
-		} else {
-			log.Printf("Person %d, name %q exists", i, person.Name)
-		}
+		logic.CreateOrUpdatePerson(i)
 	}
 
 	// Смотрим содержимое таблицы жанров
@@ -91,36 +86,6 @@ func main() {
 
 	fmt.Println("GENRE_TABLE$")
 	fmt.Println(rowSlice)
-
-	// Смотрим содержимое таблицы студий
-	//type RowStudio struct {
-	//	id           uuid.UUID
-	//	shikimori_id string
-	//	studio_name  string
-	//	image        string
-	//}
-	//
-	//rows, err = postgres.Conn.Query(context.Background(), "SELECT * FROM public.studio_table")
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//defer rows.Close()
-	//
-	//var rowSlice1 []RowStudio
-	//for rows.Next() {
-	//	var r RowStudio
-	//	err := rows.Scan(&r.id, &r.shikimori_id, &r.studio_name, &r.image)
-	//	if err != nil {
-	//		log.Fatal(err)
-	//	}
-	//	rowSlice1 = append(rowSlice1, r)
-	//}
-	//if err := rows.Err(); err != nil {
-	//	log.Fatal(err)
-	//}
-	//
-	//fmt.Println("STUDIO_TABLE$")
-	//fmt.Println(rowSlice1)
 
 	//конец просмотра содержимого таблицы
 }

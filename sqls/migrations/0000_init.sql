@@ -154,15 +154,25 @@ CREATE TABLE IF NOT EXISTS animes(
 );
 
 CREATE TABLE IF NOT EXISTS person(
-    id uuid PRIMARY KEY, --уникальный id человека
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(), --уникальный id человека
     people_name VARCHAR(128) NOT NULL, --имя
     russian VARCHAR(128), --имя на русском
     japanese VARCHAR(64), ----имя на японском
     image VARCHAR(255) REFERENCES images_table (source_img), --url фото человека
     shikimori_id integer UNIQUE, --id человека на сайте shikimori
     job_title VARCHAR(255), --основная работа
-    birthday date, --дата рождения
-    deceased date, --дата смерти
+    birthday jsonb, --день, год, месяц
+        --{
+        --   "day": 25,
+        --   "year": 1976,
+        --   "month": 5
+        --}, --дата рождения
+    deceased jsonb, --день, год, месяц
+    --{
+    --   "day": 25,
+    --   "year": 2096,
+    --   "month": 5
+    --}, --дата смерти
     website VARCHAR(255), --адрес сайта человека
     groupped_roles jsonb, --роли в аниме: название + количество
     --roles VARCHAR(255)[], --роли в аниме (Лучшие роли?) {[список аниме]}
