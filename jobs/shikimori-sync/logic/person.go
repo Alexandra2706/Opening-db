@@ -10,12 +10,6 @@ import (
 	shikimori_api "shikimori-sync/shikimori-api"
 )
 
-type PersonDate struct {
-	Day   int `json:"day,omitempty"` //`json:"-"`
-	Year  int `json:"year,omitempty"`
-	Month int `json:"month,omitempty"`
-}
-
 func CreateOrUpdatePerson(pid int) {
 	person, err := shikimori_api.GetPersonInfo(pid)
 	if err != nil {

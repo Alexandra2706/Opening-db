@@ -14,23 +14,6 @@ const (
 	imageEndpoint = "https://shikimori.one"
 )
 
-var kindsMap map[string]string = map[string]string{
-	"tv":    "tv",
-	"movie": "movie",
-	"ova":   "ova",
-	"ona":   "ona",
-	"other": "other",
-}
-
-var ratingMap map[string]string = map[string]string{
-	"r_plus": "r_plus",
-	"pg_13":  "pg_13",
-	"r":      "r",
-	"g":      "g",
-	"rx":     "rx",
-	"pg":     "pg",
-}
-
 func main() {
 	defer postgres.CloseConnection()
 
@@ -48,9 +31,7 @@ func main() {
 	//}
 
 	for _, aid := range animeList {
-
 		logic.CreateOrUpdateAnime(aid)
-
 	}
 
 	for i := 1; i < maxNumberPage; i++ {
