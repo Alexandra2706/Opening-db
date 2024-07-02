@@ -1,0 +1,7 @@
+package routes
+
+import "net/http"
+
+func Init(mux *http.ServeMux) {
+	mux.HandleFunc("GET /v1/anime", listAnime)
+}
