@@ -11,7 +11,7 @@ EXCEPTION
 END $$;
 
 DO $$ BEGIN
-    CREATE TYPE rating AS ENUM ('r_plus', 'pg_13', 'r', 'g', 'rx');
+    CREATE TYPE rating AS ENUM ('r_plus', 'pg_13', 'r', 'g', 'rx', 'pg');
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
@@ -44,34 +44,42 @@ EXCEPTION
 END $$;
 
 CREATE TABLE IF NOT EXISTS images_table(
-    hash varchar(64) PRIMARY KEY, --IPFS CID
-    source_img varchar(255), --URL адрес изображения большого размера на сайте shikimori
-    meta jsonb --различные данные
+    source_img varchar(255) PRIMARY KEY, --Путь внутри s3 backet
+    path varchar(255), --URL адрес изображения большого размера на сайте shikimori
+    meta jsonb --ширина, высота, формат
+               --{
+               --   "width": 100,
+               --   "height": 100,
+               --   "format": "image/webp",
+               --   "format-source": "image/webp"
+               --}
 );
 
 CREATE TABLE IF NOT EXISTS ipfs_object(
-    hash varchar(64) PRIMARY KEY, --IPFS CID
+    path varchar(255) PRIMARY KEY, --IPFS CID
     mime_type varchar(64)
 );
 
 CREATE TABLE IF NOT EXISTS genres_table(
-    id varchar(32) PRIMARY KEY, -- id жанра uuid
-    shikimori_id integer, --id с сайта shikimori
-    genre_name varchar(100), --название жанра на английском
-    russian varchar(100) --название жанра на русском
+    id varchar(255) PRIMARY KEY, -- id жанра uuid
+    shikimori_id integer UNIQUE, --id с сайта shikimori
+    genre_name varchar(255), --название жанра на английском
+    russian varchar(255) --название жанра на русском
 );
+
+CREATE INDEX IF NOT EXISTS genres_table_shikimori_id ON genres_table USING BTREE (shikimori_id);
 
 CREATE TABLE IF NOT EXISTS studio_table(
     id uuid PRIMARY KEY, --id студии
-    shikimori_id integer, --id с сайта shikimori
-    studio_name varchar(100), --название студии
+    shikimori_id integer UNIQUE, --id с сайта shikimori
+    studio_name varchar(255), --название студии
     --filtered_name varchar(100), --надо?
     --real boolean, --надо? и что это?
-    image varchar(64) REFERENCES images_table (hash) --url логотипа студии
+    image varchar(255) REFERENCES images_table (source_img) --url логотипа студии
 );
 
 CREATE TABLE IF NOT EXISTS video_table(
-    hash varchar(64) PRIMARY KEY, --id видео IPFS CID
+    path varchar(255) PRIMARY KEY, --id видео IPFS CID
     shikimori_id integer, --id с сайта shikimori
     url varchar(255), --ссылка на youtube видео
     --image_url varchar(255),  --ссылка на youtube картинка
@@ -82,7 +90,7 @@ CREATE TABLE IF NOT EXISTS video_table(
 );
 
 CREATE TABLE IF NOT EXISTS audio_table(
-    hash varchar(64) PRIMARY KEY, --id аудио IPFS CID
+    path varchar(255) PRIMARY KEY, --id аудио IPFS CID
     source_url varchar(255), --url аудиозаписи
     duration integer --длительность аудио в минутах
 );
@@ -94,7 +102,7 @@ CREATE TABLE IF NOT EXISTS track_table(
 
 CREATE TABLE IF NOT EXISTS track_revision_table(
     track_id uuid PRIMARY KEY, --id трека
-    hash varchar(64), --hash аудио или видео IPFS CID
+    path varchar(255), --hash аудио или видео IPFS CID
     is_tv_sised boolean,
     is_instrumental boolean
 );
@@ -108,7 +116,7 @@ CREATE TABLE IF NOT EXISTS lyrics_table(
 
 CREATE TABLE IF NOT EXISTS animes(
     -- Основные поля:
-    id uuid PRIMARY KEY, --наш уникальный id
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(), --наш уникальный id
     anime_name varchar(255) UNIQUE NOT NULL, --название анимэ
     name_russian varchar(255), --название анимэ на русском
     name_english varchar[], --название анимэ на английском
@@ -124,11 +132,11 @@ CREATE TABLE IF NOT EXISTS animes(
     franchise jsonb, --франшиза
     updated_at timestamp with time zone DEFAULT NOW(), --дата обновления
     next_episode_at varchar(255), --следующая серия ссылка
-    image varchar(64) REFERENCES images_table (hash), --постер аниме (изображения на сайте shikimori)
-    genres varchar(32)[], --жанры, может быть несколько
+    image varchar(255) REFERENCES images_table (source_img), --постер аниме (изображения на сайте shikimori)
+    genres varchar(255)[], --жанры, может быть несколько
     studios uuid[], --REFERENCES Studio (id), --студии, может быть несколько
-    videos varchar(64)[], --REFERENCES Video (id), --эпизоды
-    screenshots varchar(64)[], -- REFERENCES Sreenshot (id), --кадры
+    videos varchar(255)[], --REFERENCES Video (id), --эпизоды
+    screenshots varchar(255)[], -- REFERENCES Sreenshot (id), --кадры
 
     -- shikimori data:
     shikimori_id integer UNIQUE NOT NULL, --id с сайта shikimori
@@ -146,15 +154,25 @@ CREATE TABLE IF NOT EXISTS animes(
 );
 
 CREATE TABLE IF NOT EXISTS person(
-    id uuid PRIMARY KEY, --уникальный id человека
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(), --уникальный id человека
     people_name VARCHAR(128) NOT NULL, --имя
     russian VARCHAR(128), --имя на русском
     japanese VARCHAR(64), ----имя на японском
-    image VARCHAR(64) REFERENCES images_table (hash), --url фото человека
+    image VARCHAR(255) REFERENCES images_table (source_img), --url фото человека
     shikimori_id integer UNIQUE, --id человека на сайте shikimori
     job_title VARCHAR(255), --основная работа
-    birthday date, --дата рождения
-    deceased date, --дата смерти
+    birthday jsonb, --день, год, месяц
+        --{
+        --   "day": 25,
+        --   "year": 1976,
+        --   "month": 5
+        --}, --дата рождения
+    deceased jsonb, --день, год, месяц
+    --{
+    --   "day": 25,
+    --   "year": 2096,
+    --   "month": 5
+    --}, --дата смерти
     website VARCHAR(255), --адрес сайта человека
     groupped_roles jsonb, --роли в аниме: название + количество
     --roles VARCHAR(255)[], --роли в аниме (Лучшие роли?) {[список аниме]}
@@ -203,14 +221,14 @@ CREATE OR REPLACE FUNCTION anime_validate() RETURNS trigger AS $anime_validate$
 DECLARE
     --Создаем переменные для записи результата SELECT
     --и циклов
-    add_genre varchar(32) := NULL;
-    genre varchar(32);
+    add_genre varchar(255) := NULL;
+    genre varchar(255);
     add_studio uuid := NULL;
     studio uuid;
-    add_video varchar(64) := NULL;
-    video varchar(64);
-    add_screenshot varchar(64) := NULL;
-    screenshot varchar(64);
+    add_video varchar(255) := NULL;
+    video varchar(255);
+    add_screenshot varchar(255) := NULL;
+    screenshot varchar(255);
 BEGIN
     --Создаем дату обновления
     NEW.updated_at := current_timestamp;
@@ -241,7 +259,7 @@ BEGIN
     --Проверить что id_video задан верно
     IF NEW.videos IS NOT NULL THEN
         FOREACH video IN ARRAY(NEW.videos) LOOP
-            SELECT hash INTO add_video FROM video_table WHERE hash = video;
+            SELECT path INTO add_video FROM video_table WHERE path = video;
             IF NOT FOUND THEN
                 RAISE EXCEPTION 'video % not found', video;
             END IF;
@@ -251,7 +269,7 @@ BEGIN
     --Проверить что id_screenshot задан верно ВСЕ ДОЛЖНО БЫТЬ В ИМАЖЕ
     IF NEW.screenshots IS NOT NULL THEN
         FOREACH screenshot IN ARRAY(NEW.screenshots) LOOP
-            SELECT hash INTO add_screenshot FROM images_table WHERE hash = screenshot;
+            SELECT source_img INTO add_screenshot FROM images_table WHERE source_img = screenshot;
             IF NOT FOUND THEN
                 RAISE EXCEPTION 'screenshot % not found', screenshot;
             END IF;

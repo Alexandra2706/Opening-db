@@ -1,30 +1,72 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
+	"shikimori-sync/logic"
+	"shikimori-sync/postgres"
 	shikimori_api "shikimori-sync/shikimori-api"
 )
 
 const (
-	maxNumberPage = 5
+	maxNumberPage = 30
+	imageEndpoint = "https://shikimori.one"
 )
 
 func main() {
+	defer postgres.CloseConnection()
+
+	animeList, err := shikimori_api.ListAnime()
+	if err != nil {
+		log.Fatalf("Error in list anime: %q", err.Error())
+	} else {
+		log.Println("List of anime ids:", animeList)
+	}
+
+	//временно: удаляем все записи из таблицы жанров
+	//_, err = postgres.Conn.Exec(context.Background(), "delete from genres_table")
+	//if err != nil {
+	//	log.Println(err)
+	//}
+
+	for _, aid := range animeList {
+		logic.CreateOrUpdateAnime(aid)
+	}
 
 	for i := 1; i < maxNumberPage; i++ {
-		anime, err := shikimori_api.GetAnimeInfo(i)
-		if err != nil {
-			log.Printf("Error in anime %d: %q", i, err.Error())
-		} else {
-			log.Printf("Anime %d, called %q exists", i, anime.Name)
-		}
+		logic.CreateOrUpdatePerson(i)
 	}
 
-	anime, err := shikimori_api.ListAnime()
+	// Смотрим содержимое таблицы жанров
+	type Row struct {
+		id           string
+		shikimori_id string
+		genre_name   string
+		russian      string
+	}
+
+	rows, err := postgres.Conn.Query(context.Background(), "SELECT * FROM genres_table")
 	if err != nil {
-		log.Printf("Error in list anime: %q", err.Error())
-	} else {
-		log.Println("List of anime ids:", anime)
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	var rowSlice []Row
+	for rows.Next() {
+		var r Row
+		err := rows.Scan(&r.id, &r.shikimori_id, &r.genre_name, &r.russian)
+		if err != nil {
+			log.Fatal(err)
+		}
+		rowSlice = append(rowSlice, r)
+	}
+	if err := rows.Err(); err != nil {
+		log.Fatal(err)
 	}
 
+	fmt.Println("GENRE_TABLE$")
+	fmt.Println(rowSlice)
+
+	//конец просмотра содержимого таблицы
 }

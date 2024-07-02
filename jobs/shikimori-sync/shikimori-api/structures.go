@@ -1,6 +1,9 @@
 package shikimori_api
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type Anime struct {
 	Id      int    `json:"id"`
@@ -14,20 +17,20 @@ type Anime struct {
 	} `json:"image"`
 	Url               string        `json:"url"`
 	Kind              string        `json:"kind"`
-	Score             string        `json:"score"`
+	Score             *string       `json:"score"`
 	Status            string        `json:"status"`
-	Episodes          int           `json:"episodes"`
-	EpisodesAired     int           `json:"episodes_aired"`
-	AiredOn           string        `json:"aired_on"`
-	ReleasedOn        string        `json:"released_on"`
+	Episodes          *int          `json:"episodes"`
+	EpisodesAired     *int          `json:"episodes_aired"`
+	AiredOn           *string       `json:"aired_on"`
+	ReleasedOn        *string       `json:"released_on"`
 	Rating            string        `json:"rating"`
 	English           []string      `json:"english"`
 	Japanese          []string      `json:"japanese"`
 	Synonyms          []interface{} `json:"synonyms"`
 	LicenseNameRu     string        `json:"license_name_ru"`
 	Duration          int           `json:"duration"`
-	Description       string        `json:"description"`
-	DescriptionHtml   string        `json:"description_html"`
+	Description       *string       `json:"description"`
+	DescriptionHtml   *string       `json:"description_html"`
 	DescriptionSource interface{}   `json:"description_source"`
 	Franchise         string        `json:"franchise"`
 	Favoured          bool          `json:"favoured"`
@@ -109,4 +112,41 @@ type AnimeShort struct {
 	EpisodesAired int         `json:"episodes_aired"`
 	AiredOn       string      `json:"aired_on"`
 	ReleasedOn    interface{} `json:"released_on"`
+}
+
+type Person struct {
+	Id      int    `json:"id"`
+	Name    string `json:"name"`
+	Russian string `json:"russian"`
+	Image   struct {
+		Original string `json:"original"`
+		Preview  string `json:"preview"`
+		X96      string `json:"x96"`
+		X48      string `json:"x48"`
+	} `json:"image"`
+	Url      string `json:"url"`
+	Japanese string `json:"japanese"`
+	JobTitle string `json:"job_title"`
+	BirthOn  struct {
+		Day   *int `json:"day,omitempty"`
+		Year  *int `json:"year,omitempty"`
+		Month *int `json:"month,omitempty"`
+	} `json:"birth_on"`
+	DeceasedOn struct {
+	} `json:"deceased_on"`
+	Website          string           `json:"website"`
+	GrouppedRoles    *json.RawMessage `json:"groupped_roles"`
+	Roles            []interface{}    `json:"roles"`
+	Works            []interface{}    `json:"works"`
+	TopicId          interface{}      `json:"topic_id"`
+	PersonFavoured   bool             `json:"person_favoured"`
+	Producer         bool             `json:"producer"`
+	ProducerFavoured bool             `json:"producer_favoured"`
+	Mangaka          bool             `json:"mangaka"`
+	MangakaFavoured  bool             `json:"mangaka_favoured"`
+	Seyu             bool             `json:"seyu"`
+	SeyuFavoured     bool             `json:"seyu_favoured"`
+	UpdatedAt        time.Time        `json:"updated_at"`
+	ThreadId         interface{}      `json:"thread_id"`
+	Birthday         struct{}         `json:"birthday"`
 }
