@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="go build shikimory sync" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="Opening-db" />
+    <working_directory value="$PROJECT_DIR$" />
+    <envs>
+      <env name="DB_URL" value="postgres://postgres:qwerty@51.15.244.238:5432/postgres" />
+      <env name="S3_BUCKET" value="opdb-data-dev" />
+      <env name="S3_PRIVATE_KEY" value="2d92fb4a-a2b4-43eb-a940-09d590f78bc3" />
+      <env name="S3_PUBLIC_KEY" value="SCWQX6072V9X057XJVTD" />
+    </envs>
+    <kind value="FILE" />
+    <directory value="$PROJECT_DIR$/api" />
+    <filePath value="$PROJECT_DIR$/jobs/shikimori-sync/main.go" />
+    <method v="2" />
+  </configuration>
+</component>
