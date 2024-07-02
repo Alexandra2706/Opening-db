@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"strings"
 	"sync"
@@ -29,7 +28,7 @@ func CreateOrUpdateGenre(shikimoriId int, genreName string, russian string) stri
 	if err != nil {
 		log.Fatalf("Error in update genre: %q", err.Error())
 	}
-	fmt.Printf("Add '%s' in Genre table\n", stringId)
+	log.Printf("Add '%s' in Genre table\n", stringId)
 
 	existGenresLock.Lock()
 	existGenres[shikimoriId] = stringId

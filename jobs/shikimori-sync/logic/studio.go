@@ -1,7 +1,6 @@
 package logic
 
 import (
-	"fmt"
 	"github.com/google/uuid"
 	"log"
 	"shikimori-sync/postgres"
@@ -13,6 +12,6 @@ func CreateOrUpdateStudio(studioID int, studioName string, imageUrl string) uuid
 	if err != nil {
 		log.Fatalf("Error in get image: %q", err.Error())
 	}
-	fmt.Println("Studio data: ", studioID, studioName, imageUrl)
+	log.Println("Studio data: ", studioID, studioName, imageUrl)
 	return postgres.CreateOrUpdateStudio(studioID, studioName, imageUrl)
 }

@@ -2,7 +2,6 @@ package logic
 
 import (
 	"context"
-	"fmt"
 	"github.com/google/uuid"
 	"log"
 	"shikimori-sync/postgres"
@@ -56,7 +55,7 @@ func CreateOrUpdateAnime(aid int) {
 		res := CreateOrUpdateStudio(anime.Studios[i].Id, anime.Studios[i].Name, imageEndpoint+anime.Studios[i].Image)
 		studioList = append(studioList, res)
 	}
-	fmt.Println(studioList)
+	log.Println(studioList)
 
 	// видео заполнить потом
 	var videoList = []string{}
@@ -82,6 +81,8 @@ func CreateOrUpdateAnime(aid int) {
 		log.Printf("Anime raiting not found: %q", anime.Rating)
 		dbRating = "other" // надо ли тут добавить в enum 'other'?
 	}
+
+	//ToDo какова структура licensors_ru и franchise, оба имеют тип jsonb.
 
 	row := postgres.Conn.QueryRow(context.Background(), `
 			INSERT INTO public.animes (
