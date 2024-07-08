@@ -3,16 +3,17 @@ package main
 //go:generate swag init
 
 import (
-	"api/routes"
 	"log"
 	"net/http"
 
 	"github.com/rs/cors"
+	"github.com/swaggo/http-swagger/v2"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 
 	_ "api/docs"
-	"github.com/swaggo/http-swagger/v2"
+	"api/postgres"
+	"api/routes"
 )
 
 // @title OPDB Test API
@@ -28,14 +29,14 @@ import (
 
 func main() {
 
+	defer postgres.CloseConnection()
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL("/swagger/doc.json"), //The url pointing to API definition
 	))
 
-	mux.HandleFunc("/v1/test", sayhello)
-	mux.HandleFunc("/hello", sayhello)
 	routes.Init(mux)
 
 	//h2cWrapper := &h2c.HandlerH2C{
@@ -74,9 +75,13 @@ func main() {
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
+
+	//mux.HandleFunc("/v1/anime", ListAnime)
+	//mux.HandleFunc("/v1/test", sayhello)
+
 }
 
-func sayhello(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(200)
-	w.Write([]byte("Hello World http2"))
-}
+//func sayhello(w http.ResponseWriter, r *http.Request) {
+//	w.WriteHeader(200)
+//	w.Write([]byte("Hello World http2"))
+//}
