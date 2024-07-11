@@ -7,27 +7,13 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 type errorResponse struct {
 	Message string `json:"message"`
 }
 
-// @Summary Get Anime List
-// @Tags Lists
-// @Description Get anime list
-// @ID get-anime-list
-// @Accept  json
-// @Produce  json
-// @Param offset query int false "Offset"
-// @Param limit query int false "Limit"
-// @Success 200 {object} []structures.AnimeShortInfo
-// @Failure 400,404 {object} errorResponse
-// @Failure 500 {object} errorResponse
-// @Failure default {object} errorResponse
-// @Router /anime [get]
-func listAnime(w http.ResponseWriter, r *http.Request) {
+func SetLimitOffset(w http.ResponseWriter, r *http.Request) (*int, *int, error) {
 	offset := 0
 	limit := 1000
 	var err error
@@ -44,7 +30,7 @@ func listAnime(w http.ResponseWriter, r *http.Request) {
 			if err == nil {
 				w.Write(errMessage)
 			}
-			return
+			return nil, nil, err
 		}
 	}
 	if offset < 0 {
@@ -59,16 +45,34 @@ func listAnime(w http.ResponseWriter, r *http.Request) {
 			if err == nil {
 				w.Write(errMessage)
 			}
-			return
+			return nil, nil, err
 		}
 	}
 	if limit <= 0 || limit > 1000 {
 		limit = 1000
 	}
+	return &limit, &offset, nil
+}
 
-	//http.StatusBadRequest, err.Error())
-
-	listAnimeInfo, err := postgres.ListAnime(limit, offset)
+// @Summary Get Anime List
+// @Tags Lists
+// @Description Get anime list
+// @ID get-anime-list
+// @Accept  json
+// @Produce  json
+// @Param offset query int false "Offset"
+// @Param limit query int false "Limit"
+// @Success 200 {object} []structures.AnimeInfo
+// @Failure 400,404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /anime [get]
+func listAnime(w http.ResponseWriter, r *http.Request) {
+	limit, offset, err := SetLimitOffset(w, r)
+	if err != nil {
+		return
+	}
+	listAnimeInfo, err := postgres.ListAnime(*limit, *offset)
 	if err != nil {
 		log.Println("get list anime ", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
@@ -86,11 +90,47 @@ func listAnime(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Printf("JSON string: %s\n", string(jsonListAnime))
 
-	fmt.Println("Ofsset=", offsetStr)
-	fmt.Println("Limit=", limitStr)
-
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonListAnime)
-	date := time.Date(2020, 9, 9, 13, 34, 17, 0, time.UTC)
-	fmt.Println("date=", date)
+}
+
+// @Summary Get person List
+// @Tags Lists
+// @Description Get person list
+// @ID get-person-list
+// @Accept  json
+// @Produce  json
+// @Param offset query int false "Offset"
+// @Param limit query int false "Limit"
+// @Success 200 {object} []structures.PersonInfo
+// @Failure 400,404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /person [get]
+func listPerson(w http.ResponseWriter, r *http.Request) {
+	limit, offset, err := SetLimitOffset(w, r)
+	if err != nil {
+		return
+	}
+	listPersonInfo, err := postgres.ListPerson(*limit, *offset)
+	if err != nil {
+		log.Println("get list anime ", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		errMessage, err := json.Marshal(errorResponse{Message: "Internal Server Error"})
+		if err == nil {
+			w.Write(errMessage)
+		}
+		return
+	}
+	jsonListPerson, err := json.MarshalIndent(&listPersonInfo, "", " ")
+	if err != nil {
+		log.Println("marshal ", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	fmt.Printf("JSON string: %s\n", string(jsonListPerson))
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonListPerson)
+
 }
