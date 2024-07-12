@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"reflect"
 	"shikimori-sync/postgres"
 	"shikimori-sync/s3"
 	shikimori_api "shikimori-sync/shikimori-api"
@@ -32,12 +33,13 @@ func CreateOrUpdatePerson(pid int) {
 
 	deceased, err := json.Marshal(person.DeceasedOn)
 	if err != nil {
-		log.Fatalf("Error in json birthday: %q", err.Error())
+		log.Fatalf("Error in json deceased: %q", err.Error())
 	}
 
 	fmt.Println("deceased:", string(deceased))
 
 	fmt.Println("GrouppedRoles:", string(*person.GrouppedRoles))
+	fmt.Println("TypeOf GrouppedRoles:", reflect.TypeOf(*person.GrouppedRoles))
 
 	row := postgres.Conn.QueryRow(context.Background(), `
 			INSERT INTO public.person(

@@ -83,6 +83,8 @@ func CreateOrUpdateAnime(aid int) {
 		dbRating = "other" // надо ли тут добавить в enum 'other'?
 	}
 
+	//ToDo какова структура licensors_ru и franchise, оба имеют тип jsonb.
+
 	row := postgres.Conn.QueryRow(context.Background(), `
 			INSERT INTO public.animes (
 				anime_name,     name_russian,     name_english,          name_japanese, 
