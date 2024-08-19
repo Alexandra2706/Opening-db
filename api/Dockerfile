@@ -2,7 +2,7 @@ FROM golang:1.22-alpine AS builder
 WORKDIR /api
 
 COPY go.mod go.sum *.go ./
-COPY routes ./
+COPY routes postgres s3 structures ./
 
 RUN go mod download
 RUN go install github.com/swaggo/swag/cmd/swag@latest
