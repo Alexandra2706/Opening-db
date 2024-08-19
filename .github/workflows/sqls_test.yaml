@@ -14,7 +14,7 @@ on:
       - sqls/**
 
 jobs:
-  build_and_push:
+  tests:
     runs-on:
       - linux
       - X64

@@ -77,6 +77,9 @@ tests.sync:
 
 tests.unit:
 	cd api
+	go mod download
+	go install github.com/swaggo/swag/cmd/swag@latest
+	go generate
 	go test ./...
 
 registry_login:
