@@ -1,0 +1,42 @@
+name: Test sqls
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - v*
+    branches:
+      - main
+    paths:
+      - api/**
+      - jobs/**
+  pull_request:
+    paths:
+      - api/**
+      - jobs/**
+
+jobs:
+  build_and_push:
+    runs-on:
+      - linux
+      - X64
+      - self-hosted
+
+    container:
+      image: golang:1.22-alpine
+
+    steps:
+      - name: Check out git repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: install make
+        run: apk add make
+
+      - name: Vars
+        run: make vars
+
+      - name: Test
+        run: make tests.unit
+
