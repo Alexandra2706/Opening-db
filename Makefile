@@ -75,6 +75,13 @@ tests.sync:
 	make tests.sync.run
 	make local_run.stop_postgres
 
+tests.unit:
+	cd api
+	go mod download
+	go install github.com/swaggo/swag/cmd/swag@latest
+	go generate
+	go test ./...
+
 registry_login:
 	docker login rg.fr-par.scw.cloud/opdb -u nologin -p ${SCW_SECRET_KEY}
 

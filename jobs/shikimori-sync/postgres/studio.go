@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"fmt"
 	"log"
 	//"strings"
 	"sync"
@@ -27,7 +26,7 @@ func CreateOrUpdateStudio(shikimoriId int, studioName string, imageUrl string) u
 
 	uuidId := uuid.New()
 
-	fmt.Println(uuidId, shikimoriId, studioName, imageUrl)
+	log.Println(uuidId, shikimoriId, studioName, imageUrl)
 
 	err := Conn.QueryRow(context.Background(), `
 		INSERT INTO public.studio_table (id, shikimori_id, studio_name, image) VALUES ($1, $2, $3, $4)
@@ -37,7 +36,7 @@ func CreateOrUpdateStudio(shikimoriId int, studioName string, imageUrl string) u
 	if err != nil {
 		log.Fatalf("Error in update studio: %q", err.Error())
 	}
-	fmt.Printf("Add '%s' in Studio table\n", studioName)
+	log.Printf("Add '%s' in Studio table\n", studioName)
 
 	existStudiosLock.Lock()
 	existStudios[shikimoriId] = uuidId

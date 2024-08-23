@@ -2,17 +2,14 @@ package s3
 
 import (
 	"bytes"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	s3api "github.com/aws/aws-sdk-go/service/s3"
 	"github.com/google/uuid"
-	_ "image/jpeg"
-	_ "image/png"
 	"log"
 	"os"
 	"strings"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	s3api "github.com/aws/aws-sdk-go/service/s3"
 )
 
 var s3Conn *s3api.S3

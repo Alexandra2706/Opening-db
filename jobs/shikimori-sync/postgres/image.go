@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/jackc/pgx/v5"
 	"log"
 )
@@ -48,6 +47,6 @@ func CreateOrUpdateImage(path string, sourceUrl string, meta ImageData) error {
 		log.Printf("Error in update image: %q", err.Error())
 		return err
 	}
-	fmt.Printf("Add '%s' in Image table\n", path)
+	log.Printf("Add '%s' in Image table\n", path)
 	return nil
 }

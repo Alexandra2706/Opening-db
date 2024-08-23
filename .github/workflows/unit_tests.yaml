@@ -1,4 +1,4 @@
-name: Test sqls
+name: Unit tests
 
 on:
   workflow_dispatch:
@@ -8,10 +8,12 @@ on:
     branches:
       - main
     paths:
-      - sqls/**
+      - api/**
+      - jobs/**
   pull_request:
     paths:
-      - sqls/**
+      - api/**
+      - jobs/**
 
 jobs:
   tests:
@@ -20,15 +22,21 @@ jobs:
       - X64
       - self-hosted
 
+    container:
+      image: golang:1.22-alpine
+
     steps:
       - name: Check out git repo
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
+      - name: install make
+        run: apk add make
+
       - name: Vars
         run: make vars
 
       - name: Test
-        run: make tests.postgres
+        run: make tests.unit
 

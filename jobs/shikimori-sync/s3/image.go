@@ -16,7 +16,7 @@ import (
 
 func CreateOrUpdateImage(sourceUrl string) error {
 	// Скачать картинку с помощью get запроса
-	fmt.Println(sourceUrl)
+	log.Println(sourceUrl)
 	resp, err := http.Get(sourceUrl)
 	if err != nil {
 		log.Fatal(err)
@@ -34,7 +34,7 @@ func CreateOrUpdateImage(sourceUrl string) error {
 	// Посмотреть mime type изображения
 	mimeType := http.DetectContentType(imgBytes)
 
-	fmt.Println(mimeType)
+	log.Println(mimeType)
 
 	//По mime type определить надо ли конвертировать изображение и как
 	if mimeType != "image/jpeg" && mimeType != "image/png" {
@@ -52,18 +52,18 @@ func CreateOrUpdateImage(sourceUrl string) error {
 		return errors.New(fmt.Sprintf("failed to decode image: %q", err.Error()))
 	}
 
-	fmt.Println("type: ", reflect.TypeOf(originalImage))
+	log.Println("type: ", reflect.TypeOf(originalImage))
 	imgWidth := originalImage.Bounds().Dx()
 	imgHeight := originalImage.Bounds().Dy()
-	fmt.Println("Image width: ", imgWidth)
-	fmt.Println("Image height: ", imgHeight)
+	log.Println("Image width: ", imgWidth)
+	log.Println("Image height: ", imgHeight)
 
 	//Посчитать md5 - хэш сумму конвертированной картинки
 
 	hash := md5.Sum(imgBytes)
-	fmt.Println("hash: ", hash)
+	log.Println("hash: ", hash)
 	checkSum := hex.EncodeToString(hash[:])
-	fmt.Println("checkSum: ", checkSum)
+	log.Println("checkSum: ", checkSum)
 
 	dbImg := postgres.GetImage(sourceUrl)
 
